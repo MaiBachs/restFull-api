@@ -1,0 +1,28 @@
+<#if channelTypeId?has_content>
+    SELECT
+    	JOB_ID,PARENT_ID,CODE,NAME,RESULT_DATA_TYPE,CATEGORY,STATUS,CREATED_DATE,LAST_UPDATE
+    FROM
+    	SMARTPHONE.JOB
+    WHERE
+    	JOB_ID IN (
+    	SELECT
+    		JOB_ID
+    	FROM
+    		SMARTPHONE.PLAN_JOB
+    	WHERE
+    		PLAN_ID IN (
+    		SELECT
+    			PLAN_ID
+    		FROM
+    			SMARTPHONE.PLAN
+    		WHERE
+    			CHANNEL_TYPE_ID = :channelTypeId ))
+    	AND PARENT_ID IS NULL;
+<#else>
+    SELECT JOB_ID,PARENT_ID,CODE,NAME,RESULT_DATA_TYPE,CATEGORY,STATUS,CREATED_DATE,LAST_UPDATE FROM SMARTPHONE.JOB WHERE PARENT_ID
+    <#if parentId?has_content>
+        = :parentId
+    <#else>
+         IS NULL
+    </#if>
+</#if>

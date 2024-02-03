@@ -1,0 +1,5 @@
+--getListStockType
+select STOCK_TYPE_ID id, NAME, TABLE_NAME tableName from STOCK_TYPE WHERE STATUS = 1
+AND (LOWER(NAME) LIKE '%kit%' OR LOWER(NAME) LIKE '%handset%' OR LOWER(NAME) LIKE '%sim mobile%')
+ORDER BY NAME
+

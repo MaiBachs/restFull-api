@@ -1,0 +1,404 @@
+/*-----------------------------------------------------------------------------------
+    Template Name: viho Admin
+    Template URI: themes.pixelstrap.com/viho
+    Description: This is Admin theme
+    Author: Pixelstrap
+    Author URI: https://themeforest.net/user/pixelstrap
+-----------------------------------------------------------------------------------
+
+01. General CSS
+02. Generic CSS
+03. Card CSS
+04. Loader CSS
+05. Header CSS
+06. Button CSS
+07. Color CSS
+08. GRID CSS
+09. Error-page  CSS
+10. Icon css
+11. Form Builder 1 CSS
+12. Form Builder 2 CSS
+13. Email Application  CSS
+14. Chat CSS
+15. Alert CSS
+16. Popover CSS
+17. List CSS
+18. Switch  CSS
+19. Mega option CSS
+20. Touchspin  CSS
+21. Select 2 CSS
+22. User profile css
+23. Progress CSS
+24. According CSS
+25. Authentication CSS
+26. Form CSS
+27. Coming Soon CSS
+28. Radio CSS
+29. Form Input CSS
+30. Data-table CSS
+31. JS datagrid CSS
+32. Page CSS
+33. Ecommerce  CSS
+34. Pricing CSS
+35. Form builder css
+36. NAV CSS
+37. Dropdown CSS
+38. Landing CSS
+39. Table  CSS
+40. Alertbox-call-out CSS
+41. Chart CSS
+42. Timeline CSS
+43. Timeline 2 CSS
+44. Tabs CSS
+45. Gallery CSS
+46. Blog CSS
+47. Footer CSS
+48. Form Wizard
+49. Badge CSS
+50. Tree CSS
+51. Search CSS
+52. Datepicker CSS
+53. Dashboard CSS
+54. Tour  CSS
+55. theme layout CSS
+56. Ribbon CSS
+57. breadcrumb CSS
+58. Steps  CSS
+59. Customizer CSS
+60. RTL CSS
+61. base_inputs CSS
+62. Responsive css
+63. Box-layout css
+64. Button Builder css
+65. Button Builder color picker CSS
+66. FullCalendar CSS
+67. Dashboard 2
+68. Dashboard 3
+70. Document css
+71. Faq CSS
+72. Job CSS
+73. knowledgebase CSS
+74. internationalization CSS
+75. Learning CSS
+76. Order History css
+77. Print CSS
+78. Sidebar CSS
+79. social app
+80. avatars
+81. Bookmark
+82. cart
+83. wishlist
+84. checkout
+85. bookmark app
+86. contacts
+87. task
+88. Invoice
+89. Formwidgets
+90. Base_inputs
+91. Project list
+92. File Manager
+
+ */
+ :root {
+    --theme-deafult: #24695c;
+    --theme-secondary: #ba895d;
+    --bs-link-color: #24695c;
+    --bs-link-hover-color: #24695c;
+}
+.pagination-search {
+    float: right;
+  }
+  .fa {
+    font-size: 17px;
+  }
+
+  .fa-plus-square-o {
+    font-size: 17px;
+    color: red;
+  }
+  .fa-minus-square-o {
+    font-size: 17px;
+    color: #24695c;
+  }
+  .check-icon {
+    text-align: center;
+  }
+  .table .list_parent1 {
+    font-weight: 700;
+  }
+  .table .list_parent2 {
+    font-weight: 600;
+    padding-left: 20px;
+  }
+  .table .list_parent3 {
+    padding-left: 40px;
+  }
+  .table .check-icon i {
+    font-size: 18px;
+  }
+  .popup-to-checklist {
+    color: #2e8777;
+    text-decoration: underline !important;
+  }
+  .btn-add {
+    background-color: #4682b4; 
+    color: #fff;
+    
+    &:hover {
+      background: #4682b4;
+      color: #fff;  
+    }
+  }
+  .btn-add.btn:disabled {
+    background: #629bc9;
+    color: #fff;
+  }
+
+  .multiselect {
+    min-height: 30px;
+    display: flex;
+    text-align: center;
+  }
+  .multiselect-single-label-text {
+    font-size: 14px
+  }
+
+  .lable-require {
+    color: red;
+    font-size: 13px;
+    padding-left: 4px;
+  }
+  .multiselect-wrapper {
+    min-height: 27px
+  }
+  .download-template a {
+    color: #209e91 !important;
+    cursor: pointer;
+    text-decoration: underline !important;
+  }
+  .text-color-target td {
+    color: #9932CC;
+    font-weight: 500;
+
+  }
+  .text-color-target:first-child td {
+    padding-left: 15px;
+   }
+   .table .text-target {
+    background: #ddffdd;
+  }
+  .table .text-danger {
+    background: #FFF8DC;
+    color: black;
+  }
+  .table .text-result {
+    background: #e7f3fe;
+  }
+  .accumulated {
+    background: #ffdddd;
+    color: #000;
+    padding: 8px;
+    border-left: 6px solid red;
+    margin-bottom: 7px;
+   }
+   .text-color-target-bar {
+    background-color: #f2b5b5 !important;
+   }
+   .bg-target th {
+       background: #f2b5b5 !important;
+   }
+   .develop-new {
+    background-color: #F2B6B5;
+   }
+   body {
+    font-size: 13px !important;
+  }
+  .text-color-target td {
+    color: #9932cc;
+    font-weight: 500;
+  }
+
+  .total-row td {
+    background: antiquewhite;
+    font-weight: 700;
+  }
+  .multiselect.is-disabled {
+    background: #fff
+  }
+
+  .text-channel-code.text-color-target {
+    padding-left: 15px !important;
+  }
+  th {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  td {
+    font-size: 13px;
+  }
+  
+  .text-channel-code.text-color-target {
+    padding-left: 15px !important;
+  }
+  .total-success {
+        display: flex;
+        align-items: center;
+        justify-content: end;
+    }
+    .sale-plan > tbody > tr > .text-channel-code {
+      text-align: left !important ;
+      padding: 0px 5px;
+    }
+    .text-danger {
+      background: #FFF8DC;
+      color: black;
+    }
+    .danger {
+      margin-bottom: 8px;
+      padding: 8px;
+      margin-right: 5px;
+      background-color: #FFF8DC;
+      border-left: 6px solid #ffeb3b;
+    }
+    .target-plan-bc td ,
+    .target-plan-bc th  {
+      background-color:  #ffdddd;
+    }
+    .text-color-target td {
+      color: #9932CC;
+      font-weight: 500;
+  
+    }
+    .text-color-target:first-child td {
+        padding-left: 15px !important;
+    }
+    .target-total-type td {
+      padding: 5px !important;
+    } 
+    .accumulated {
+      background: #ffdddd;
+      color: #000;
+      padding: 8px;
+      border-left: 6px solid red;
+      margin-bottom: 7px;
+    }
+    .text-color-target-bar {
+      background-color: #f2b5b5 !important;
+    }
+    .bg-target th {
+        background: #f2b5b5 !important;
+    }
+    .develop-new {
+      background-color: #F2B6B5;
+    }
+    .success {
+      margin:0px 5px 8px;
+      background-color: #ddffdd;
+      border-left: 6px solid #04AA6D;
+  }
+  .sale-info {
+    margin-bottom: 8px;
+    padding: 8px;
+    background-color: #AFEEEE;
+    border-left: 6px solid #2196F3;
+  }
+  .success p {
+    padding: 6px;
+  }
+  .total-status {
+    width: 55%;
+  }
+  .total-status .target {
+    padding: 10px;
+    display: flex;
+    font-size: 16px;
+    align-items: center;
+  }
+
+.icon-label-search {
+  font-size: 15px;
+  margin-right: 5px;
+}
+.fa-briefcase.icon-label-search {
+  font-size: 14px
+}
+
+.take-care-channel {
+  color: #2dacd1; 
+  font-weight: 500;
+}
+.take-care {
+  padding-top: 10px;
+  border-top: 1px solid #dddddd;
+}
+.sidebar-main .form-control {
+  height: 25px;
+}
+.sidebar-main {
+  font-size: 12px;
+  padding-top: 15px;
+  padding-left: 5px;
+}
+.main-nav {
+  padding: 7px;
+  height: 100%;
+  overflow: auto;
+  margin: 10px 0px;
+ 
+}
+.main-nav::-webkit-scrollbar {
+  width: 2px; /* Chiều rộng của thanh cuộn */
+  height: 5px;
+}
+.main-nav::-webkit-scrollbar-track {
+background: #f1f1f1;
+}
+
+/* Màu của thanh cuộn khi cuộn */
+.main-nav::-webkit-scrollbar-thumb {
+background: #888;
+}
+
+/* Hiển thị thanh cuộn chỉ khi di chuột vào */
+.main-nav::-webkit-scrollbar-thumb:hover {
+background: #555;
+}
+.main-nav .codigo-de {
+  width: 75%;
+}
+.main-nav .input-group-btn {
+  width: 25%;
+}
+
+.main-nav .multiselect-wrapper {
+  min-height: 25px;
+  font-size: 13px
+
+}
+.main-nav .multiselect-single-label-text {
+  padding: 0px 7px;
+  font-size: 12px;
+}
+.main-nav .multiselect-option {
+  font-size: 12px
+}
+  
+   
+@import "theme/variables";
+@import "theme/general";
+@import "theme/generic";
+@import "theme/card";
+@import "theme/loader";
+@import "theme/header";
+@import "theme/sidebar";
+@import "theme/buttons";
+
+@import "theme/alert";
+
+@import "theme/footer";
+
+@import "theme/custom-theme-options";
+
+@import "theme/breadcrumb";
+
+@import "theme/bookmark";

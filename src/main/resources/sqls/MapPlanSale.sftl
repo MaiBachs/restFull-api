@@ -1,0 +1,74 @@
+--mapSearchPlan
+SELECT mpc.id,
+       mpc.br_id                                                                                      AS brId,
+       mpc.BR_CODE                                                                                    AS brCode,
+       mpc.bc_id                                                                                      AS bcId,
+       mpc.BC_CODE                                                                                    AS bcCode,
+       mpc.STAFF_ID                                                                                   AS staffId,
+       mpc.STAFF_CODE                                                                                 AS staffCode,
+       mpc.CHANNEL_CODE                                                                               AS channelCode,
+       (ct.NAME || ' - ' || ct.code)                                                                  AS channelTypeName,
+       mpc.AMOUNT,
+       mpc.LATS,
+       mpc.LONGS,
+       mpc.STATUS,
+       TO_CHAR(mpc.start_date, 'DD/MM/YYYY')                                                          AS startDate,
+       TO_CHAR(mpc.end_date, 'DD/MM/YYYY')                                                            AS endDate,
+       mpc.CHANNEL_TYPE_ID                                                                            AS channelTypeId,
+       mpc.CREATED_USER                                                                               AS createdUser,
+       msp.NAME                                                                                       AS policyName,
+       CASE WHEN mpc.CHANNEL_TYPE_ID = -100 THEN 'x' ELSE null END                                    AS bts,
+       time2SaleTbl2.timeSale,
+       mspt.NAME                                                                                      AS placeSale,
+       (SELECT LISTAGG(CHANNEL_CODE, ', ') WITHIN GROUP (ORDER BY CHANNEL_CODE)
+        FROM map_plan_sale_channel
+        WHERE MAP_PLAN_SALE_ID = mpc.id)                                                              AS pr,
+       (SELECT COUNT(*) FROM sm.map_plan_sale_result sresult WHERE sresult.map_plan_sale_id = mpc.id
+<#if fromDate?has_content>
+   AND sresult.ACTIVE_DATE >= TO_DATE(:fromDate, 'DD/MM/YYYY')
+</#if>
+<#if toDate?has_content>
+  AND sresult.ACTIVE_DATE < TO_DATE(:toDate, 'DD/MM/YYYY')+1
+</#if>
+       ) AS saleResult
+FROM map_plan_sale mpc
+         LEFT JOIN CHANNEL_TYPE ct ON (mpc.CHANNEL_TYPE_ID = ct.CHANNEL_TYPE_ID)
+         LEFT JOIN MAP_SALE_POLICY msp ON (mpc.MAP_SALE_POLICY_ID = msp.ID)
+         LEFT JOIN MAP_SALE_PLACE_TYPE mspt ON (mspt.id = mpc.PLACE_TO_SELL_ID)
+         LEFT JOIN (
+    SELECT time2SaleTbl.MAP_PLAN_SALE_ID, time2SaleTbl.timeSale
+    FROM (SELECT stime.MAP_PLAN_SALE_ID,
+                 listagg(cnf.TIME_FROM || '->' || cnf.TIME_TO, '; ')
+                         within group ( order by cnf.TIME_FROM || '-' || cnf.TIME_TO ) AS timeSale
+          from map_sale_time_config cnf,
+               map_plan_sale_time stime
+          WHERE stime.MAP_SALE_TIME_CONFIG_ID = cnf.ID
+          group by stime.MAP_PLAN_SALE_ID) time2SaleTbl
+) time2SaleTbl2 ON (mpc.ID = time2SaleTbl2.MAP_PLAN_SALE_ID)
+WHERE 1 = 1
+<#if brCode?has_content>
+  AND mpc.BR_CODE = :brCode
+</#if>
+<#if bcCode?has_content>
+  AND mpc.BC_CODE = :bcCode
+</#if>
+<#if staffCode?has_content>
+  AND mpc.STAFF_CODE = :staffCode
+</#if>
+<#if fromDate?has_content>
+  AND mpc.start_date >= TO_DATE(:fromDate, 'DD/MM/YYYY')
+</#if>
+<#if toDate?has_content>
+  AND mpc.start_date < TO_DATE(:toDate, 'DD/MM/YYYY') + 1
+</#if>
+<#if status?has_content>
+  AND mpc.STATUS = :status
+</#if>
+<#if channelCode?has_content>
+  AND mpc.CHANNEL_CODE LIKE :channelCode
+</#if>
+<#if id?has_content>
+  AND mpc.id = :id
+    AND ROWNUM < 2
+</#if>
+ORDER BY mpc.CREATED_DATETIME DESC

@@ -1,0 +1,7 @@
+--findByTypeAndCode
+SELECT ap.*
+FROM smartphone.app_params ap
+WHERE ap.type = :paramType
+  AND ap.code = :code
+  AND ap.status = 1
+ORDER BY NAME

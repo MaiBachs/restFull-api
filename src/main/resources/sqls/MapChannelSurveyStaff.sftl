@@ -1,0 +1,41 @@
+--searchSurveyConfig
+SELECT sv.* FROM MAP_CHANNEL_SURVEY_STAFF sv WHERE 1=1
+<#if branchId?has_content>
+    AND sv.branch_id = :branchId
+</#if>
+<#if bcId?has_content>
+    AND sv.bc_id = :bcId
+</#if>
+<#if userId?has_content>
+    AND sv.user_id = :userId
+</#if>
+<#if channelCode?has_content>
+    AND sv.channel_code LIKE '%' :channelCode
+</#if>
+<#if status?has_content>
+    AND sv.status = :status
+</#if>
+<#if createdDate?has_content>
+    AND sv.created_date >= TO_DATE(:createdDate, 'dd/MM/yyyy')
+</#if>
+<#if createdDate?has_content>
+    AND sv.created_date < TO_DATE( :createdDate, 'dd/MM/yyyy')+1
+</#if>
+
+--findToProcessExcelData
+SELECT sv.* FROM MAP_CHANNEL_SURVEY_STAFF sv WHERE 1 = 1
+<#if branchId?has_content>
+    AND sv.branch_id = :branchId
+</#if>
+<#if bcId?has_content>
+    AND sv.bc_id = :bcId
+</#if>
+<#if userId?has_content>
+    AND sv.user_id = :userId
+</#if>
+<#if channelId?has_content>
+    AND sv.channel_id = :channelId
+</#if>
+<#if start_vote_date?has_content>
+    AND sv.start_vote_date = TO_DATE( :start_vote_date, 'dd/MM/yyyy')
+</#if>

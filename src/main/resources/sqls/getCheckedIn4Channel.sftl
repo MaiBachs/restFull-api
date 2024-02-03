@@ -1,0 +1,32 @@
+SELECT DISTINCT checkedin.channel_code AS code, checkedin.checkedDate
+FROM (
+         SELECT b.SHOP_ID,
+                b.shop_code                                                                                   AS channel_code,
+                LISTAGG(TO_CHAR(d.time_check_in, 'dd/MM/yyyy'), ', ')
+                        WITHIN GROUP (ORDER BY d.time_check_in)                                               AS checkedDate
+         FROM sm.shop b,
+              sm.staff_check_in_out d
+         WHERE 1 = 1
+           AND d.owner_id = b.shop_id
+           AND d.owner_type = 1
+           AND d.time_check_in >= TO_DATE(:fromDate, 'dd/MM/yyyy')
+           AND d.time_check_in < TO_DATE(:toDate, 'dd/MM/yyyy')
+           AND b.shop_code IN (:staffCodes)
+         GROUP BY b.SHOP_ID, b.shop_code
+         UNION ALL
+         SELECT c.staff_id,
+                c.staff_code                                       channel_code,
+                LISTAGG(TO_CHAR(d.time_check_in, 'dd/MM/yyyy'), ', ')
+                        WITHIN GROUP (ORDER BY d.time_check_in) AS checkedDate
+         FROM sm.shop b,
+              sm.staff c,
+              sm.staff_check_in_out d
+         WHERE 1 = 1
+           AND d.owner_id = c.staff_id
+           AND d.owner_type = 2
+           AND d.object_type = 1
+           AND c.shop_id = b.shop_id
+           AND d.time_check_in >= TO_DATE(:fromDate, 'dd/MM/yyyy')
+           AND d.time_check_in < TO_DATE(:toDate, 'dd/MM/yyyy')
+           AND c.staff_code IN (:staffCodes)
+         GROUP BY c.staff_id, c.staff_code) checkedin

@@ -1,0 +1,17 @@
+SELECT new com.spm.viettel.msm.repository.smartphone.entity.MapAuditorCheckList(
+       sv.id,
+       sv.branchId,
+       sv.branchCode,
+       sv.auditorId,
+       sv.channelTypeId,
+       sv.shopId,
+       sv.createdDate,
+       sv.createdBy,
+       sv.updatedDate,
+       sv.updatedBy
+           ) FROM MapAuditorCheckList sv
+WHERE sv.branchId = :branchId
+  AND sv.channelTypeId = :channelTypeId
+  AND sv.shopId = :shopId
+  AND sv.auditorId = :auditorId
+

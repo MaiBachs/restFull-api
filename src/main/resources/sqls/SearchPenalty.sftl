@@ -1,0 +1,29 @@
+SELECT
+	E.ID AS id,
+	J.NAME AS evaluationType,
+	E.USER_TYPE_ID AS userTypeId,
+	E.USER_TYPE AS userType,
+	E.CREATED_BY AS createdBy,
+	E.CREATED_DATE AS createdDate,
+	E.UPDATED_BY AS updatedBy,
+    E.UPDATED_DATE AS updateDate,
+	E.STATUS AS status,
+	E.EVALUATION_ID AS evaluationId
+FROM
+	SMARTPHONE.PENALTY E
+INNER JOIN SMARTPHONE.JOB J ON
+    J.JOB_ID = E.EVALUATION_ID
+WHERE
+    E.STATUS = 1
+	<#if evaluationId?has_content>
+	    AND E.EVALUATION_ID = :evaluationId
+	</#if>
+	<#if userTypeId?has_content>
+	    AND E.USER_TYPE_ID = :userTypeId
+	</#if>
+	<#if fromDate?has_content>
+	    AND E.UPDATED_DATE >= TO_DATE(:fromDate, 'DD-MM-YYYY')
+	</#if>
+	<#if toDate?has_content>
+	    AND E.UPDATED_DATE <= TO_DATE(:toDate, 'DD-MM-YYYY') + 1
+	</#if>

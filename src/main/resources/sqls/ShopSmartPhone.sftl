@@ -1,0 +1,9 @@
+--getChannelShopOfBranch
+SELECT a.shop_id     AS shopId,
+        a.name       AS shopName,
+        a.shop_code  AS shopCode,
+        a.parent_shop_id  AS parentShopId
+FROM shop a
+WHERE a.shop_code = :shopCode
+  AND a.parent_shop_id IN (SELECT b.shop_id FROM shop b WHERE b.parent_shop_id = :parentId AND b.channel_type_id = 2 AND b.status = 1)
+

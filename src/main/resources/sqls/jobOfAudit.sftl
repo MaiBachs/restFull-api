@@ -1,0 +1,3 @@
+SELECT j
+FROM Job j
+WHERE j.ccAudit = 1

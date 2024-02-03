@@ -1,0 +1,7 @@
+SELECT t.X,
+       t.Y
+FROM sm.timekeeping t
+WHERE (t.CREATED_DATE between TO_DATE(:fromDate, 'DD/MM/YYYY HH24:MI') AND TO_DATE(:toDate, 'DD/MM/YYYY HH24:MI'))
+    AND t.STAFF_CODE = :staffCode
+    AND t.TYPE = :objectType
+    ORDER BY t.CREATED_DATE ASC

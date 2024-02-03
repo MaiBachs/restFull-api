@@ -1,0 +1,16 @@
+SELECT j
+FROM Job j
+WHERE 1=1
+<#if channelTypeId?has_content>
+j.jobId IN (SELECT pj.jobId as jobId
+             FROM PlanJob pj
+             WHERE pj.planId IN
+                   (SELECT p.planId as planId FROM Plan p WHERE p.channelTypeId = :channelTypeId))
+  AND j.parentId IS NULL
+<#else>
+    <#if parentId?has_content>
+            j.parentId = :parentId
+            <#else>
+         j.parentId is NULL
+        </#if>
+</#if>

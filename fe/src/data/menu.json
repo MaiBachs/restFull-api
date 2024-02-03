@@ -1,0 +1,40 @@
+{
+    "data": [
+      
+      {
+        "path": "/",
+        "title": "Dashboard",
+        "icon": "home",
+        "type": "link",
+        "active": true
+      },
+      {
+        "path":"http://support.pixelstrap.com/help-center",
+        "title":"Raise Support",
+        "icon":"headphones",
+        "type":"redirect",
+        "active":true
+      },
+      {
+        "path":"https://docs.pixelstrap.com/viho/document/",
+        "title":"Documentation",
+        "icon":"file-text",
+        "type":"redirect",
+        "active":true
+      },
+      {
+        "path":"/newPageVisitPlan",
+        "title":"visit plan",
+        "icon":"file-text",
+        "type":"link",
+        "active":true
+      },
+      {
+        "path":"/evaluation",
+        "title":"evaluation",
+        "icon":"file-text",
+        "type":"link",
+        "active":true
+      }
+    ]
+  }

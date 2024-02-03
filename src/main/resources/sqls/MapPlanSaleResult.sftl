@@ -1,0 +1,78 @@
+--searchResult
+SELECT   BR_CODE AS brCode
+     ,BC_CODE AS bcCode
+     ,owner_code AS ownerCode
+     ,isdn
+     ,channel_code AS channelCode
+     ,bts_active_code AS btsActiveCode
+     ,connect_type AS connectType
+     ,service_type AS serviceType
+     ,TO_CHAR(active_date, 'dd/MM/yyyy') AS activeDate
+     ,TO_CHAR(caculate_date, 'dd/MM/yyyy') AS caculateDate
+     ,recharge
+     ,product_code AS productCode
+FROM sm.map_plan_sale_result
+WHERE 1=1
+<#if fromDate?has_content>
+   AND ACTIVE_DATE >= TO_DATE(:fromDate, 'DD/MM/YYYY')
+</#if>
+<#if toDate?has_content>
+  AND ACTIVE_DATE < TO_DATE(:toDate, 'DD/MM/YYYY')+1
+</#if>
+<#if brCode?has_content>
+  AND BR_CODE = :brCode
+</#if>
+<#if bcCode?has_content>
+  AND BC_CODE = :bcCode
+</#if>
+<#if ownerCode?has_content>
+  AND owner_code = :ownerCode
+</#if>
+<#if isdn?has_content>
+  AND isdn = :isdn
+</#if>
+<#if mapPlanSaleId?has_content>
+  AND map_plan_sale_id = :mapPlanSaleId
+</#if>
+
+--downloadSearchResultDetail
+SELECT DISTINCT
+    st.BR_CODE                                                                                    AS brCode,
+    st.BC_CODE                                                                                    AS bcCode,
+    st.STAFF_ID                                                                                   AS staffId,
+    st.STAFF_CODE                                                                                 AS staffCode,
+    mpc.CHANNEL_CODE                                                                               AS channelCode,
+    NVL(mpc.AMOUNT,0) AS AMOUNT,
+    mpc.LATS,
+    mpc.LONGS,
+    TO_CHAR(mpc.start_date, 'DD/MM/YYYY')                                                          AS startDate,
+    TO_CHAR(mpc.end_date, 'DD/MM/YYYY')                                                            AS endDate,
+    msp.NAME                                                                                       AS policyName,
+    (SELECT COUNT(*) FROM sm.map_plan_sale_result sresult WHERE sresult.map_plan_sale_id = mpc.id
+<#if fromDate?has_content>
+   AND sresult.ACTIVE_DATE >= TO_DATE(:fromDate, 'DD/MM/YYYY')
+</#if>
+<#if toDate?has_content>
+  AND sresult.ACTIVE_DATE < TO_DATE(:toDate, 'DD/MM/YYYY')+1
+</#if>
+    ) AS saleResult
+FROM map_plan_sale_target st
+         LEFT JOIN map_plan_sale mpc ON (st.BR_CODE=mpc.BR_CODE AND st.BC_CODE=mpc.BC_CODE AND st.STAFF_ID=mpc.STAFF_ID
+<#if fromDate?has_content>
+  AND mpc.start_date >= TO_DATE(:fromDate, 'DD/MM/YYYY')
+</#if>
+<#if toDate?has_content>
+  AND mpc.start_date < TO_DATE(:toDate, 'DD/MM/YYYY') + 1
+</#if>
+    ) LEFT JOIN MAP_SALE_POLICY msp ON (mpc.MAP_SALE_POLICY_ID = msp.ID)
+WHERE st.TARGET_LEVEL =3 AND TRUNC(st.PLAN_DATE, 'YYYY') BETWEEN TRUNC(TO_DATE(:fromDate, 'DD/MM/YYYY'), 'YYYY') AND TRUNC(TO_DATE(:toDate, 'DD/MM/YYYY'), 'YYYY')
+<#if brCode?has_content>
+  AND st.BR_CODE = :brCode
+</#if>
+<#if bcCode?has_content>
+  AND st.BC_CODE = :bcCode
+</#if>
+<#if staffCode?has_content>
+  AND st.STAFF_CODE = :staffCode
+</#if>
+ORDER BY st.BR_CODE, st.BC_CODE, st.STAFF_CODE

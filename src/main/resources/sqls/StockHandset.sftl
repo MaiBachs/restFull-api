@@ -1,0 +1,211 @@
+--searchListStockInfos
+SELECT tbl_serial.owner_id ownerId
+    ,tbl_serial.stock_model_id stockModelId
+    ,stock_model.name
+    ,stock_model.stock_model_code code
+    ,tbl_serial.quantity
+    ,tbl_serial.fromSerial
+    ,tbl_serial.toSerial
+    ,tbl_serial.tableName
+    ,sale_info.price
+    ,sale_info.sale_trans_date saleDate
+    ,':' || :stockName AS stockTypeName
+FROM
+    <#if typeId?has_content && typeId==17 && nameTable?has_content>
+     (SELECT   channel_type_id as channelTypeId,
+               serial AS fromSerial,
+               serial AS toSerial,
+               1 AS quantity,
+               stock_model_id,
+               owner_id,
+               ':' || :typeId as tableName
+    FROM   ${nameTable}
+                WHERE 1 = 1
+                      AND owner_type = 1
+                      AND state_id = 1
+                      <#if channelIsVTUnit?has_content && channelIsVTUnit==2>
+                         AND status = 0 AND last_status=0
+                      </#if>
+                       <#if channelIsVTUnit?has_content && channelIsVTUnit!=2>
+                         AND status = 1 AND last_status=0
+                       </#if>
+                      AND owner_id=:ownerId") tbl_serial
+    </#if>
+    <#if typeId?has_content && typeId!=17 && nameTable?has_content && !nameTable?starts_with("STOCK_ISDN_")>
+    	(
+    SELECT
+    	TO_CHAR(MIN (serial)) AS fromSerial ,
+    	TO_CHAR(MAX (serial)) AS toSerial ,
+    	MAX(serial)-MIN(serial) + 1 AS quantity
+                 ,
+    	channel_type_id AS channelTypeId,
+    	owner_id ,
+    	stock_model_id ,
+    	tableName
+    FROM
+    	(
+    	SELECT
+    		serial,
+    		serial - ROW_NUMBER () OVER (
+    		ORDER BY channel_type_id,
+    		serial) rn,
+    		channel_type_id,
+    		owner_id,
+    		stock_model_id,
+    		':' || :typeId AS tableName
+    	FROM
+    		${nameTable}
+    	WHERE
+    		owner_type = 1
+    		AND owner_id = :owner_id
+    		AND state_id = 1
+    	  <#if vtUnit?has_content && vtUnit==2>
+               AND status = 0 AND last_status=0
+          </#if>
+          <#if vtUnit?has_content && vtUnit!=2>
+             AND status = 1 AND last_status=0
+          </#if>
+    		AND upper(serial) = lower(serial))
+    GROUP BY
+    	rn,
+    	channel_type_id,
+    	owner_id,
+    	stock_model_id,
+    	tableName
+    ORDER BY
+    	fromSerial) tbl_serial
+    </#if>
+
+
+LEFT JOIN stock_model ON
+(tbl_serial.stock_model_id = stock_model.stock_model_id)
+LEFT JOIN (
+SELECT
+	DISTINCT ROUND ( (e.amount_before_tax - e.discount_amount) * 1.18 / e.quantity,
+	0) price,
+	c.shop_id,
+	b.stock_model_id,
+	c.channel_type_id,
+	c.shop_code channel_code,
+	c.shop_id owner_id,
+	'1' owner_type,
+	(
+	SELECT
+		stock_model_code
+	FROM
+		sm.stock_model
+	WHERE
+		stock_model_id = b.stock_model_id)
+             stock_model_code,
+	d.sale_trans_date,
+	d.from_serial,
+	d.to_serial
+FROM
+	${nameTable} b,
+	sm.shop c,
+	sm.sale_trans_serial d,
+	sm.sale_trans_detail e,
+	sm.sale_trans f
+WHERE
+	b.owner_id = c.shop_id
+	AND b.owner_type = 1
+	AND c.channel_type_id IN
+                    (
+	SELECT
+		channel_type_id
+	FROM
+		sm.channel_type
+	WHERE
+		channel_type.is_vt_unit = 2
+		AND object_type = 1)
+	AND e.sale_trans_detail_id = d.sale_trans_detail_id
+	AND e.sale_trans_id = f.sale_trans_id
+	AND f.status = 3
+	AND d.from_serial = b.serial
+UNION ALL
+SELECT
+	DISTINCT ROUND ( (e.amount_before_tax - e.discount_amount) * 1.18 / e.quantity,
+	0) price,
+	c.shop_id,
+	b.stock_model_id,
+	c.channel_type_id,
+	c.staff_code channel_code,
+	c.staff_id owner_id,
+	'1' owner_type,
+	(
+	SELECT
+		stock_model_code
+	FROM
+		sm.stock_model
+	WHERE
+		stock_model_id = b.stock_model_id)
+             stock_model_code,
+	d.sale_trans_date,
+	d.from_serial,
+	d.to_serial
+FROM
+	${nameTable} b,
+	sm.staff c,
+	sm.sale_trans_serial d,
+	sm.sale_trans_detail e,
+	sm.sale_trans f,
+	sm.shop g
+WHERE
+	b.owner_id = c.staff_id
+	AND b.owner_type = 2
+	AND c.channel_type_id = 80043
+	AND e.sale_trans_detail_id = d.sale_trans_detail_id
+	AND e.sale_trans_id = f.sale_trans_id
+	AND f.status = 3
+	AND d.from_serial = b.serial
+UNION ALL
+SELECT
+	DISTINCT ROUND ( (e.amount_before_tax - e.discount_amount) * 1.18 / e.quantity,
+	0) price,
+	c.shop_id,
+	b.stock_model_id,
+	c.channel_type_id,
+	c.staff_code channel_code,
+	c.staff_id owner_id,
+	'1' owner_type,
+	(
+	SELECT
+		stock_model_code
+	FROM
+		sm.stock_model
+	WHERE
+		stock_model_id = b.stock_model_id)
+             stock_model_code,
+	d.sale_trans_date,
+	d.from_serial,
+	d.to_serial
+FROM
+	${nameTable} b,
+	sm.staff c,
+	sm.sale_trans_serial d,
+	sm.sale_trans_detail e,
+	sm.sale_trans f,
+	sm.shop g
+WHERE
+	b.owner_id = c.staff_id
+	AND b.owner_type = 2
+	AND c.shop_id = g.shop_id
+	AND c.channel_type_id = 10
+	AND g.channel_type_id IN
+                    (
+	SELECT
+		channel_type_id
+	FROM
+		sm.channel_type
+	WHERE
+		channel_type.is_vt_unit = 2
+		AND object_type = 1)
+	AND e.sale_trans_detail_id = d.sale_trans_detail_id
+	AND e.sale_trans_id = f.sale_trans_id
+	AND f.status = 3
+	AND d.from_serial = b.serial
+) sale_info ON
+(tbl_serial.owner_id = sale_info.owner_id
+	AND tbl_serial.fromSerial = sale_info.from_serial
+	AND tbl_serial.toSerial = sale_info.to_serial)
+

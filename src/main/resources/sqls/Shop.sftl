@@ -1,0 +1,319 @@
+--getListShopByLoginUser
+SELECT a.shop_code AS code,
+       a.name AS name
+FROM Shop a
+WHERE 1 = 1
+  AND a.status = :inUse
+  AND a.shop_id IN
+      (SELECT sh.shop_id
+       FROM Shop sh
+       WHERE sh.status = :inUse
+         AND sh.channel_type_id <> :channelTypeId
+       START WITH sh.shop_id = :userShopId
+       CONNECT BY PRIOR sh.shop_id = sh.parent_shop_id)
+<#if shopCode?has_content>
+  AND lower(a.shop_code) like lower(:shopCode)
+</#if>
+<#if shopName?has_content>
+  AND lower(a.name) like lower(:shopName)
+</#if>
+
+--getListShopsByParentShopId
+SELECT a.shop_id         AS shopId,
+       a.name       AS shopName,
+       a.shop_code       AS shopCode,
+       a.parent_shop_id  AS parentShopId
+from shop a WHERE 1=1
+<#if status?has_content>
+ AND a.status = :status
+</#if>
+<#if parentShopId?has_content>
+  AND a.parent_shop_id = :parentShopId
+</#if>
+<#if channelTypeId?has_content>
+ AND a.channel_type_id = :channelTypeId
+</#if>
+<#if shopCode?has_content>
+ AND a.shop_code = :shopCode
+</#if>
+order by a.name
+
+--getShopById
+SELECT a.shop_Id         AS shopID,
+       a.name       AS shopName,
+       a.parent_Shop_Id  AS parentShopId,
+       a.account         AS account,
+       a.bank_Name       AS bankName,
+       a.address         AS address,
+       a.tel             AS tel,
+       a.fax             AS fax,
+       a.shop_Code       AS shopCode,
+       a.contact_Name    AS contactName,
+       a.contact_Title   AS contactTitle,
+       a.tel_Number      AS telNumber,
+       a.email           AS email,
+       a.description     AS description,
+       a.province        AS province,
+       a.par_Shop_Code   AS parShopCode,
+       a.center_Code     AS centerCode,
+       a.company         AS company,
+       a.tin             AS tin,
+       a.shop            AS shop,
+       a.province_Code   AS provinceCode,
+       a.pay_Comm        AS payComm,
+       a.create_Date     AS createDate,
+       a.channel_Type_Id AS channelTypeId,
+       a.discount_Policy AS discountPolicy,
+       a.price_Policy    AS pricePolicy,
+       a.status          AS status,
+       a.shop_Path       AS shopPath,
+       CH.name           AS name
+from Shop a,
+     Channel_Type CH
+where 1 = 1
+  AND a.channel_Type_Id = CH.channel_Type_Id
+  AND a.shop_Id = :shopId
+  AND ROWNUM < 2
+
+--getListBranchIsCenter
+SELECT bcm.CENTER_ID AS shopId, bcm.CENTER_CODE AS code, s.NAME
+FROM BRANCH_CENTER_MAP bcm,
+     SHOP s
+WHERE bcm.CENTER_ID = s.SHOP_ID
+  AND BRANCH_ID = :branchId
+
+--getShopTreeByLevel
+SELECT DISTINCT shop_Id shopId, shop_code shopCode, shop_name name
+FROM sm.tbl_shop_tree
+WHERE parent_shop_id = :parentShopId
+<#if level == 3>
+  AND channel_type_id = 3
+  AND SHOP_CODE LIKE '%BR' OR SHOP_CODE = 'BR_TEST'
+  <#if userShopId != 7282 >
+      AND shop_id IN (SELECT tree.root_id FROM sm.tbl_shop_tree tree WHERE tree.shop_id = :userShopId )
+  </#if>
+</#if>
+<#if level == 4>
+  AND channel_type_id = 2
+  <#if bcId != 0>
+    AND shop_id = :bcId
+  </#if>
+</#if>
+ORDER BY shop_code, shop_name
+
+--getCountShopTreeCheckCenter
+SELECT COUNT(shop_id) FROM sm.tbl_shop_tree WHERE parent_shop_id = :parentShopId AND shop_level = 4  AND channel_type_id = 2  AND shop_id = :shopId
+
+--getShopTreeCheckIsBranch
+SELECT COUNT(shop_id) FROM sm.tbl_shop_tree WHERE parent_shop_id = 7282 AND channel_type_id = 3  AND shop_id = :shopId
+
+--getBussinessCenterOfAgent
+SELECT PARENT_SHOP_ID FROM sm.tbl_shop_tree where 1=1 AND shop_level = 4 and shop_id = :shopId AND ROWNUM < 2
+
+--getChannelShopOfBranch
+SELECT  a.shop_id     AS shopId,
+        a.name       AS shopName,
+        a.shop_code  AS shopCode,
+        a.parent_shop_id  AS parentShopId
+        a.staff_owner_id AS staffOwnerId
+FROM shop a
+WHERE a.shop_code = :shopCode
+  AND a.parent_shop_id IN (SELECT b.shop_id FROM shop b WHERE b.parent_shop_id = :parentId AND b.channel_type_id = 2 AND b.status = 1)
+
+--findShopByParentIdAndChannelTypeId
+SELECT *
+from shop s join staff a on s.staff_owner_id = a.staff_id where 1=1
+<#if shopId?has_content>
+    AND s.parent_shop_id = :shopId
+</#if>
+<#if channelTypeId?has_content>
+    AND s.channel_type_id = :channelTypeId
+</#if>
+<#if staffId?has_content>
+    AND s.staff_owner_id = :staffId
+</#if>
+
+--getListChannelByShopAndChannelTypeAndCodeAndOwner
+SELECT DISTINCT *
+FROM (
+     SELECT s.SHOP_ID         as id,
+            s.PARENT_SHOP_ID  as shopId,
+            s.SHOP_CODE       as code,
+            s.NAME,
+            sf.STAFF_ID       as staffOwnerId,
+            sf.STAFF_CODE     as staffOwnerCode,
+            s.CHANNEL_TYPE_ID as channelTypeId,
+            s.X               as latitude,
+            s.Y               as longitude,
+            s.RADIUS          as radius,
+            s.STATUS,
+            ct.NAME           AS channelTypeName,
+            ct.OBJECT_TYPE    AS objectType
+     FROM shop s
+              LEFT JOIN staff sf ON (s.STAFF_OWNER_ID = sf.STAFF_ID)
+              LEFT JOIN CHANNEL_TYPE ct ON (s.CHANNEL_TYPE_ID = ct.CHANNEL_TYPE_ID)
+     WHERE 1 = 1 AND s.X IS NOT NULL AND s.Y IS NOT NULL AND s.RADIUS IS NOT NULL
+<#if shopId?has_content>
+  AND s.shop_id IN (SELECT stree.shop_id FROM sm.tbl_shop_tree stree WHERE stree.root_id = :shopId)
+</#if>
+<#if channelTypeId?has_content>
+    AND s.CHANNEL_TYPE_ID = :channelTypeId
+</#if>
+<#if channelCode?has_content>
+    AND UPPER(s.SHOP_CODE) LIKE UPPER(:channelCode)
+</#if>
+<#if staffId?has_content>
+    AND s.staff_owner_id = :staffId
+</#if>
+     UNION
+     SELECT s.STAFF_ID        as id,
+            s.SHOP_ID         as shopId,
+            s.STAFF_CODE      as code,
+            s.NAME,
+            s.STAFF_OWNER_ID  as staffOwnerId,
+            sf.STAFF_CODE     AS staffOwnerCode,
+            s.CHANNEL_TYPE_ID as channelTypeId,
+            s.X               as latitude,
+            s.Y               as longitude,
+            s.RADIUS          as radius,
+            s.STATUS,
+            ct.NAME           AS channelTypeName,
+            ct.OBJECT_TYPE    AS objectType
+     FROM STAFF s
+              LEFT JOIN staff sf ON (s.STAFF_OWNER_ID = sf.STAFF_ID)
+              LEFT JOIN CHANNEL_TYPE ct ON (s.CHANNEL_TYPE_ID = ct.CHANNEL_TYPE_ID)
+     WHERE 1 = 1
+<#if shopId?has_content>
+    AND s.shop_id IN (SELECT stree.shop_id FROM sm.tbl_shop_tree stree WHERE stree.root_id = :shopId)
+</#if>
+<#if channelTypeId?has_content>
+    AND s.CHANNEL_TYPE_ID = :channelTypeId
+</#if>
+<#if channelCode?has_content>
+    AND UPPER(s.STAFF_CODE) LIKE UPPER(:channelCode)
+</#if>
+<#if staffId?has_content>
+    AND s.staff_owner_id = :staffId
+</#if>
+     )
+ORDER BY code, name
+
+--getListChannelByChannelCode
+SELECT DISTINCT *
+FROM (
+     SELECT s.SHOP_ID         as id,
+            s.PARENT_SHOP_ID  as shopId,
+            s.SHOP_CODE       as code,
+            s.NAME,
+            sf.STAFF_ID       as staffOwnerId,
+            sf.STAFF_CODE     as staffOwnerCode,
+            s.CHANNEL_TYPE_ID as channelTypeId,
+            s.X               as latitude,
+            s.Y               as longitude,
+            s.RADIUS          as radius,
+            s.STATUS,
+            ct.NAME           AS channelTypeName,
+            ct.OBJECT_TYPE    AS objectType
+     FROM shop s
+              LEFT JOIN staff sf ON (s.STAFF_OWNER_ID = sf.STAFF_ID)
+              LEFT JOIN CHANNEL_TYPE ct ON (s.CHANNEL_TYPE_ID = ct.CHANNEL_TYPE_ID)
+     WHERE UPPER(s.SHOP_CODE) IN (:channelCodes)
+     UNION
+     SELECT s.STAFF_ID        as id,
+            s.SHOP_ID         as shopId,
+            s.STAFF_CODE      as code,
+            s.NAME,
+            s.STAFF_OWNER_ID  as staffOwnerId,
+            sf.STAFF_CODE     AS staffOwnerCode,
+            s.CHANNEL_TYPE_ID as channelTypeId,
+            s.X               as latitude,
+            s.Y               as longitude,
+            s.RADIUS          as radius,
+            s.STATUS,
+            ct.NAME           AS channelTypeName,
+            ct.OBJECT_TYPE    AS objectType
+     FROM STAFF s
+              LEFT JOIN staff sf ON (s.STAFF_OWNER_ID = sf.STAFF_ID)
+              LEFT JOIN CHANNEL_TYPE ct ON (s.CHANNEL_TYPE_ID = ct.CHANNEL_TYPE_ID)
+     WHERE UPPER(s.STAFF_CODE) IN (:channelCodes)
+     )
+ORDER BY code
+
+--getBranchBcOfShop
+SELECT (SELECT root_code
+        FROM (SELECT shop_id   root_id,
+                     shop_code root_code,
+                     name      root_name,
+                     shop_id
+              FROM sm.shop
+              WHERE shop_id = 7282
+              UNION
+              SELECT tst1.root_id,
+                     tst1.root_code,
+                     tst1.root_name,
+                     tst1.shop_id
+              FROM sm.tbl_shop_tree tst1,
+                   sm.tbl_shop_tree tst2
+              WHERE tst1.root_id = tst2.shop_id
+                AND tst2.root_id = 7282
+                AND tst2.shop_level = 3) br
+        WHERE br.shop_id = b.shop_id) branchCode,
+       (SELECT root_id
+        FROM (SELECT shop_id   root_id,
+                     shop_code root_code,
+                     name      root_name,
+                     shop_id
+              FROM sm.shop
+              WHERE shop_id = 7282
+              UNION
+              SELECT tst1.root_id,
+                     tst1.root_code,
+                     tst1.root_name,
+                     tst1.shop_id
+              FROM sm.tbl_shop_tree tst1,
+                   sm.tbl_shop_tree tst2
+              WHERE tst1.root_id = tst2.shop_id
+                AND tst2.root_id = 7282
+                AND tst2.shop_level = 3) br
+        WHERE br.shop_id = b.shop_id) branchId,
+       (SELECT root_code
+        FROM (SELECT shop_id   root_id,
+                     shop_code root_code,
+                     name      root_name,
+                     shop_id
+              FROM sm.shop
+              WHERE shop_id = 7282
+              UNION
+              SELECT tst1.root_id,
+                     tst1.root_code,
+                     tst1.root_name,
+                     tst1.shop_id
+              FROM sm.tbl_shop_tree tst1,
+                   sm.tbl_shop_tree tst2
+              WHERE tst1.root_id = tst2.shop_id
+                AND tst2.root_id = 7282
+                AND tst2.shop_level = 4
+                AND tst2.channel_type_id = 2) br
+        WHERE br.shop_id = b.shop_id) bcCode,
+       (SELECT root_id
+        FROM (SELECT shop_id   root_id,
+                     shop_code root_code,
+                     name      root_name,
+                     shop_id
+              FROM sm.shop
+              WHERE shop_id = 7282
+              UNION
+              SELECT tst1.root_id,
+                     tst1.root_code,
+                     tst1.root_name,
+                     tst1.shop_id
+              FROM sm.tbl_shop_tree tst1,
+                   sm.tbl_shop_tree tst2
+              WHERE tst1.root_id = tst2.shop_id
+                AND tst2.root_id = 7282
+                AND tst2.shop_level = 4
+                AND tst2.channel_type_id = 2) br
+        WHERE br.shop_id = b.shop_id) bcId
+FROM sm.shop b
+WHERE 1 = 1
+  AND b.shop_id = :shopId

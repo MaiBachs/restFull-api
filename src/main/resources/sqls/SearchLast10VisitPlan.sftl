@@ -1,0 +1,31 @@
+--searchLast10VisitPlan
+SELECT * FROM
+    (SELECT DISTINCT v.VISIT_PLAN_ID     			AS id,
+                     v.CHANNEL_FROM_CODE 				AS userCode,
+                     v.CHANNEL_FROM_ID   				AS userId,
+                     v.BRANCH_CODE       				AS branchCode,
+                     v.BC_CODE           				AS bcCode,
+                     v.DATE_PLAN         				AS planDate,
+                     v.VISIT_TIME        				AS checkedIn
+     FROM SM.visit_plan_map v
+<#if serverMode?has_content>
+     JOIN SMARTPHONE.PLAN_RESULT pr
+ON v.VISIT_PLAN_ID = pr.VISIT_PLAN_ID
+<#else>
+   JOIN SMARTPHONE.PLAN_RESULT@DBL_SMARTPHONE pr
+        ON v.VISIT_PLAN_ID = pr.VISIT_PLAN_ID
+</#if>
+     WHERE v.status IN (1,2) AND (v.CHECKLIST_RESULT_STATUS IS NULL OR v.CHECKLIST_RESULT_STATUS IN(0,1))
+       AND pr.FILE_PATH IS NOT NULL
+       AND v.VISIT_TIME > ADD_MONTHS(SYSDATE, -6)
+        <#if channelId?has_content>
+            AND v.CHANNEL_TO_ID  =:channelId
+        </#if>
+        <#if channelCode?has_content>
+            AND v.CHANNEL_TO_CODE =:channelCode
+        </#if>
+        <#if objectType?has_content>
+            AND v.OBJECT_TYPE =:objectType
+        </#if>
+     ORDER BY v.DATE_PLAN DESC)
+WHERE ROWNUM <=10

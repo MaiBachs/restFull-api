@@ -1,0 +1,477 @@
+--searchVisitPlan
+SELECT DISTINCT v.VISIT_PLAN_ID     				AS id,
+                v.CHANNEL_FROM_CODE 				AS userCode,
+                v.CHANNEL_FROM_ID   				AS userId,
+                v.CHANNEL_TO_CODE   				AS channelCode,
+                v.CHANNEL_TO_ID     				AS channelId,
+                v.BRANCH_CODE       				AS branchCode,
+                v.BC_CODE           				AS bcCode,
+                v.DATE_PLAN         				AS planDate,
+                v.CREATED_DATE      				AS createdDate,
+                v.VISIT_TIME        				AS checkedIn,
+                v.IS_DETAIL         				AS isDetail,
+                v.CHECKLIST_RESULT_STATUS   		AS checkListResultStatus,
+                v.CHECKLIST_RESULT_APPROVE_USER    	AS checkListResultApproveUser,
+                v.CHECKLIST_RESULT_COMMENT			AS checkListResultComment,
+                v.CHANNEL_TO_CHECKLIST_STATUS	    AS channelToCheckListStatus,
+                s.POS_CODE 							AS posCode
+FROM visit_plan_map v
+   , staff s
+WHERE 1 = 1
+  AND (v.function_type is null or v.function_type = 1)
+  AND v.CHANNEL_FROM_ID = s.STAFF_ID
+<#if posCode?has_content>
+  AND s.POS_CODE = :posCode
+</#if>
+<#if staffId?has_content>
+AND v.CHANNEL_FROM_ID = :staffId
+</#if>
+<#if branchId?has_content>
+AND v.BRANCH_ID = :branchId
+</#if>
+<#if bcId?has_content>
+AND v.BC_ID = :bcId
+</#if>
+<#if checkListResultStatus?has_content>
+AND v.CHECKLIST_RESULT_STATUS = :checkListResultStatus
+</#if>
+<#if checkListResultApproveUser?has_content>
+AND v.CHECKLIST_RESULT_APPROVE_USER = :checkListResultApproveUser
+</#if>
+<#if no_sql_param_isVisited?has_content>
+    <#if no_sql_param_isVisited == 1>
+        AND v.VISIT_TIME IS NOT NULL
+    <#else>
+        AND v.VISIT_TIME IS NULL
+    </#if>
+</#if>
+
+<#if toDate?has_content>
+     AND v.DATE_PLAN <= TO_DATE(:toDate, 'dd/MM/yyyy')
+</#if>
+<#if fromDate?has_content>
+     AND v.DATE_PLAN >= TO_DATE(:fromDate, 'dd/MM/yyyy')
+</#if>
+ORDER BY v.DATE_PLAN DESC
+
+--getVisitPlanByPlanSource
+SELECT * FROM visit_plan_map v
+WHERE v.CHANNEL_FROM_CODE= :zonalStaffCode
+AND v.CHANNEL_TO_CODE = :pdvStaffCode
+AND v.DATE_PLAN = TO_DATE(:datePlan, 'DD/MM/YYYY')
+
+
+
+--getVisitPlanByUser
+SELECT DISTINCT v.VISIT_PLAN_ID     AS id,
+                v.CHANNEL_FROM_CODE AS userCode,
+                v.CHANNEL_FROM_ID   AS userId,
+                v.CHANNEL_TO_CODE   AS channelCode,
+                v.CHANNEL_TO_ID     AS channelId,
+                v.BRANCH_CODE       AS branchCode,
+                v.BC_CODE           AS bcCode,
+                v.DATE_PLAN         AS planDate,
+                v.CREATED_DATE      AS createdDate,
+                v.VISIT_TIME        AS checkedIn,
+                v.IS_DETAIL         AS isDetail
+FROM visit_plan_map v
+<#if posCode?has_content>
+   , staff s
+</#if>
+WHERE 1 = 1
+  AND (v.function_type is null or v.function_type = 1)
+<#if posCode?has_content>
+  AND v.CHANNEL_FROM_ID = s.STAFF_ID
+  AND s.POS_CODE = :posCode
+</#if>
+<#if staffId?has_content>
+AND v.CHANNEL_FROM_ID = :staffId
+</#if>
+<#if branchId?has_content>
+AND v.BRANCH_ID = :branchId
+</#if>
+<#if bcId?has_content>
+AND v.BC_ID = :bcId
+</#if>
+<#if no_sql_param_isVisited?has_content>
+    <#if no_sql_param_isVisited == 1>
+        AND v.VISIT_TIME IS NOT NULL
+    <#else>
+        AND v.VISIT_TIME IS NULL
+    </#if>
+</#if>
+  <#if toDate?has_content>
+      AND v.DATE_PLAN >= TO_DATE(:toDate,'dd/MM/yyyy')
+  </#if>
+  <#if fromDate?has_content>
+     AND v.DATE_PLAN < TO_DATE(:fromDate,'dd/MM/yyyy')
+  </#if>
+ORDER BY v.DATE_PLAN
+
+
+--getVisitCount
+SELECT COUNT(v.VISIT_PLAN_ID)
+FROM visit_plan_map v
+<#if posCode?has_content>
+   , staff s
+</#if>
+WHERE 1 = 1
+  AND (v.function_type is null or v.function_type = 1)
+<#if posCode?has_content>
+  AND v.CHANNEL_FROM_ID = s.STAFF_ID
+  AND s.POS_CODE = :posCode
+</#if>
+<#if staffId?has_content>
+AND v.CHANNEL_FROM_ID = :staffId
+</#if>
+<#if branchId?has_content>
+AND v.BRANCH_ID = :branchId
+</#if>
+<#if bcId?has_content>
+AND v.BC_ID = :bcId
+</#if>
+<#if no_sql_param_isVisited?has_content>
+    <#if no_sql_param_isVisited == 1>
+        AND v.VISIT_TIME IS NOT NULL
+    <#else>
+        AND v.VISIT_TIME IS NULL
+    </#if>
+</#if>
+  AND v.DATE_PLAN >= TO_DATE(:toDate,'dd/MM/yyyy') AND v.DATE_PLAN < TO_DATE(:fromDate,'dd/MM/yyyy')
+ORDER BY v.DATE_PLAN
+
+
+--searchVisitPlanVisited
+SELECT DISTINCT v.BRANCH_CODE          AS branchCode
+              , v.BC_CODE              AS bcCode
+              , v.CHANNEL_FROM_CODE    AS userCode
+              , v.CHANNEL_TO_CODE      AS channelCode
+              , ap.NAME                AS channelRank
+              , ap.BASE_NAME           AS visitTimeNeed
+              , COUNT(CASE WHEN (v.CHECKLIST_RESULT_STATUS <> -1 OR v.CHECKLIST_RESULT_STATUS IS NULL) THEN 1 END)  AS realTimeVisited
+              , COUNT(v.VISIT_PLAN_ID) AS numberTimePlanVisit
+              , COUNT(CASE WHEN (v.CHECKLIST_RESULT_STATUS <> -1 OR v.CHECKLIST_RESULT_STATUS IS NULL) AND v.CHANNEL_TO_CHECKLIST_STATUS = 1 THEN 1 END)  AS visitTimeQualified
+FROM visit_plan_map v
+         LEFT JOIN STAFF s ON (v.CHANNEL_TO_ID = s.STAFF_ID)
+         LEFT JOIN STAFF s2 ON (v.CHANNEL_FROM_ID = s2.STAFF_ID)
+         LEFT JOIN APP_PARAMS ap
+                   ON (ap."TYPE" = 'STAFF_AGENT_TYPE' AND ap.STATUS = '1' AND ap.VALUE = s.CHANNEL_TYPE_ID AND
+                       s.CHILD_CHANNEL = ap.CODE)
+WHERE TRUNC(v.DATE_PLAN, 'MM') = TO_DATE(:exportMonth, 'MM/YYYY')
+  AND (v.function_type is null or v.function_type = 1)
+<#if posCode?has_content>
+  AND s2.POS_CODE = :posCode
+</#if>
+<#if staffId?has_content>
+AND v.CHANNEL_FROM_ID = :staffId
+</#if>
+<#if branchId?has_content>
+AND v.BRANCH_ID = :branchId
+</#if>
+<#if bcId?has_content>
+AND v.BC_ID = :bcId
+</#if>
+<#if no_sql_param_isVisited?has_content>
+    <#if no_sql_param_isVisited == 1>
+        AND v.VISIT_TIME IS NOT NULL
+    <#else>
+        AND v.VISIT_TIME IS NULL
+    </#if>
+</#if>
+GROUP BY v.BRANCH_CODE, v.BC_CODE, v.CHANNEL_FROM_CODE, v.CHANNEL_TO_CODE, ap.NAME, ap.BASE_NAME
+
+
+
+--searchPDVNotHaveVisitPlan
+SELECT  (SELECT root_code
+          FROM (SELECT shop_code root_code,
+                       shop_id
+                FROM sm.shop
+                WHERE shop_id = 7282
+                UNION
+                SELECT tst1.root_code,
+                       tst1.shop_id
+                FROM sm.tbl_shop_tree tst1,
+                     sm.tbl_shop_tree tst2
+                WHERE tst1.root_id = tst2.shop_id
+                  AND tst2.root_id = 7282
+                  AND tst2.shop_level = 3) br
+          WHERE br.shop_id = s.shop_id)      branchCode
+          ,(SELECT root_code
+          FROM (SELECT shop_code root_code,
+                       shop_id
+                FROM sm.shop
+                WHERE shop_id = 7282
+                UNION
+                SELECT tst1.root_code,
+                       tst1.shop_id
+                FROM sm.tbl_shop_tree tst1,
+                     sm.tbl_shop_tree tst2
+                WHERE tst1.root_id = tst2.shop_id
+                  AND tst2.root_id = 7282
+                  AND tst2.shop_level = 4
+                  AND tst2.channel_type_id = 2) br
+          WHERE br.shop_id = s.shop_id)      bcCode
+        ,s.STAFF_CODE        AS channelCode
+        ,ap.NAME             AS channelRank
+        ,(CASE WHEN ap.BASE_NAME IS NOT NULL THEN ap.BASE_NAME ELSE '0' END)             AS visitTimeNeed
+        ,0  AS realTimeVisited
+        ,0  AS numberTimePlanVisit
+        ,0  AS visitTimeQualified
+FROM STAFF s
+     LEFT JOIN APP_PARAMS ap
+        ON (ap."TYPE" = 'STAFF_AGENT_TYPE'
+            AND ap.STATUS = '1'
+            AND ap.VALUE = s.CHANNEL_TYPE_ID
+            AND s.CHILD_CHANNEL = ap.CODE)
+    WHERE s.CHANNEL_TYPE_ID = 80043
+    AND s.STATUS = 1
+    AND s.X IS NOT NULL
+    AND s.Y IS NOT NULL
+<#if shopId?has_content>
+    AND s.shop_id IN (
+        SELECT stree.shop_id FROM sm.tbl_shop_tree stree
+            WHERE stree.root_id = :shopId)
+</#if>
+<#if channelHavePlan?has_content>
+   AND s.STAFF_CODE NOT IN :channelHavePlan
+</#if>
+
+--SearchVisitChannelSummary
+SELECT * FROM (
+                  SELECT DISTINCT v.BRANCH_CODE          AS branchCode
+                                , v.BC_CODE              AS bcCode
+                                , v.CHANNEL_FROM_CODE    AS userCode
+                                , s2.pos_code			 AS userPosCode
+                                , v.CHANNEL_TO_CODE      AS channelCode
+                                , sowner.STAFF_CODE      AS ownerCode
+                                , ap.NAME                AS channelRank
+                                , ap.BASE_NAME           AS visitTimeNeed
+                                , COUNT(CASE WHEN (v.CHECKLIST_RESULT_STATUS <> -1 OR v.CHECKLIST_RESULT_STATUS IS NULL) THEN 1 END)  AS realTimeVisited
+                                , COUNT(v.VISIT_PLAN_ID) AS numberTimePlanVisit
+                                , COUNT(CASE WHEN (v.CHECKLIST_RESULT_STATUS <> -1 OR v.CHECKLIST_RESULT_STATUS IS NULL) AND v.CHANNEL_TO_CHECKLIST_STATUS = 1 THEN 1 END)  AS visitTimeQualified
+                  FROM visit_plan_map v
+                           LEFT JOIN STAFF s ON (v.CHANNEL_TO_ID = s.STAFF_ID)
+                           LEFT JOIN staff sowner ON (sowner.STAFF_ID = s.STAFF_OWNER_ID)
+                           LEFT JOIN STAFF s2 ON (v.CHANNEL_FROM_ID = s2.STAFF_ID)
+                           LEFT JOIN APP_PARAMS ap
+                                     ON (ap."TYPE" = 'STAFF_AGENT_TYPE' AND ap.STATUS = '1' AND ap.VALUE = s.CHANNEL_TYPE_ID AND
+                                         s.CHILD_CHANNEL = ap.CODE)
+                  WHERE TRUNC(v.DATE_PLAN, 'MM') = TO_DATE( :exportMonth , 'MM/YYYY')
+                    AND (v.function_type is null or v.function_type = 1)
+<#if branchId?has_content>
+AND v.BRANCH_ID = :branchId
+</#if>
+<#if bcId?has_content>
+AND v.BC_ID = :bcId
+</#if>
+                  GROUP BY v.BRANCH_CODE, v.BC_CODE, v.CHANNEL_FROM_CODE,s2.pos_code, v.CHANNEL_TO_CODE, sowner.STAFF_CODE, ap.NAME, ap.BASE_NAME
+                  UNION ALL
+                  SELECT  (SELECT root_code
+                           FROM (SELECT shop_code root_code,
+                                        shop_id
+                                 FROM sm.shop
+                                 WHERE shop_id = 7282
+                                 UNION
+                                 SELECT tst1.root_code,
+                                        tst1.shop_id
+                                 FROM sm.tbl_shop_tree tst1,
+                                      sm.tbl_shop_tree tst2
+                                 WHERE tst1.root_id = tst2.shop_id
+                                   AND tst2.root_id = 7282
+                                   AND tst2.shop_level = 3) br
+                           WHERE br.shop_id = s.shop_id)      branchCode
+                       ,(SELECT root_code
+                         FROM (SELECT shop_code root_code,
+                                      shop_id
+                               FROM sm.shop
+                               WHERE shop_id = 7282
+                               UNION
+                               SELECT tst1.root_code,
+                                      tst1.shop_id
+                               FROM sm.tbl_shop_tree tst1,
+                                    sm.tbl_shop_tree tst2
+                               WHERE tst1.root_id = tst2.shop_id
+                                 AND tst2.root_id = 7282
+                                 AND tst2.shop_level = 4
+                                 AND tst2.channel_type_id = 2) br
+                         WHERE br.shop_id = s.shop_id)      bcCode
+                       ,''        AS userCode
+                       ,''        AS userPosCode
+                       ,s.STAFF_CODE        AS channelCode
+                       , (SELECT sowner.STAFF_CODE FROM staff sowner WHERE sowner.STAFF_ID = s.STAFF_OWNER_ID) AS ownerCode
+                       ,ap.NAME             AS channelRank
+                       ,(CASE WHEN ap.BASE_NAME IS NOT NULL THEN ap.BASE_NAME ELSE '0' END)             AS visitTimeNeed
+                       ,0  AS realTimeVisited
+                       ,0  AS numberTimePlanVisit
+                       ,0  AS visitTimeQualified
+                  FROM STAFF s
+                           LEFT JOIN APP_PARAMS ap
+                                     ON (ap."TYPE" = 'STAFF_AGENT_TYPE'
+                                         AND ap.STATUS = '1'
+                                         AND ap.VALUE = s.CHANNEL_TYPE_ID
+                                         AND s.CHILD_CHANNEL = ap.CODE)
+                  WHERE s.CHANNEL_TYPE_ID = 80043
+                    AND s.STATUS = 1
+                    AND s.X IS NOT NULL
+                    AND s.Y IS NOT NULL
+<#if shopId?has_content>
+                    AND s.shop_id IN (SELECT stree.shop_id FROM sm.tbl_shop_tree stree WHERE stree.root_id = :shopId )
+</#if>
+                    AND s.STAFF_ID NOT IN (
+                      SELECT DISTINCT  v.CHANNEL_TO_ID
+                      FROM visit_plan_map v
+                               LEFT JOIN STAFF s ON (v.CHANNEL_TO_ID = s.STAFF_ID)
+                               LEFT JOIN STAFF s2 ON (v.CHANNEL_FROM_ID = s2.STAFF_ID)
+                               LEFT JOIN APP_PARAMS ap
+                                         ON (ap."TYPE" = 'STAFF_AGENT_TYPE' AND ap.STATUS = '1' AND ap.VALUE = s.CHANNEL_TYPE_ID AND
+                                             s.CHILD_CHANNEL = ap.CODE)
+                      WHERE TRUNC(v.DATE_PLAN, 'MM') = TO_DATE( :exportMonth , 'MM/YYYY')
+                        AND (v.function_type is null or v.function_type = 1)
+<#if branchId?has_content>
+AND v.BRANCH_ID = :branchId
+</#if>
+<#if bcId?has_content>
+AND v.BC_ID = :bcId
+</#if>
+                  )
+              )
+ORDER BY branchCode, bcCode, userCode, channelCode
+
+
+--searchEvaluationManage
+SELECT          v.VISIT_PLAN_ID                     AS id,
+                v.JOB_ID                            AS evaluationId,
+                j.NAME                              AS evaluationName,
+                v.BRANCH_ID     				    AS branchId,
+                v.BRANCH_CODE 				        AS branchCode,
+                ct.NAME   				            AS typeChannel,
+                v.CHANNEL_TO_CODE   				AS channelCode,
+                v.CHANNEL_TO_ID     				AS channelId,
+                v.CHANNEL_FROM_CODE       			AS auditorCode,
+                v.CHANNEL_FROM_ID           		AS auditorId,
+                v.SCORE         				    AS score,
+                v.DATE_PLAN                         AS scheduledDate,
+                v.STATUS                            AS statusEvaluation,
+                v.VISIT_TIME                        AS visitTime,
+                v.REVIEW_DATE                       AS reviewDate,
+                CASE
+                    WHEN v.IS_ACTION_PLAN IS NULL THEN 'No'
+                    ELSE 'Yes'
+                END                                  AS actionPlan,
+                v.USER_REVIEW_NAME                   AS reviewingUser
+FROM SM.visit_plan_map v JOIN CHANNEL_TYPE ct ON ct.CHANNEL_TYPE_ID = v.CHANNEL_TYPE_ID
+    JOIN SMARTPHONE.JOB j ON j.JOB_ID = v.JOB_ID
+WHERE 1 = 1 AND v.CHANNEL_TYPE_ID IS NOT NULL AND v.JOB_ID IS NOT NULL AND v.PARENT_ID IS NULL
+<#if branchId?has_content>
+    AND v.BRANCH_ID = :branchId
+</#if>
+<#if typeChannel?has_content>
+    AND v.CHANNEL_TYPE_ID = :typeChannel
+</#if>
+<#if channelCode?has_content>
+    AND upper(v.CHANNEL_TO_CODE) LIKE upper(('%' || :channelCode || '%'))
+</#if>
+<#if auditor?has_content>
+    AND v.CHANNEL_FROM_CODE = :auditor
+</#if>
+<#if statusEvaluation?has_content>
+    AND v.STATUS = :statusEvaluation
+</#if>
+<#if evaluation?has_content>
+    AND v.JOB_ID = :evaluation
+</#if>
+<#if toDate?has_content>
+    AND v.DATE_PLAN < TO_DATE(:toDate, 'dd/MM/yyyy') + 1
+</#if>
+<#if fromDate?has_content>
+    AND v.DATE_PLAN >= TO_DATE(:fromDate, 'dd/MM/yyyy')
+</#if>
+ORDER BY v.UPDATE_DATE DESC
+
+--getVisitPlanByIdAndCheckActionPlan
+SELECT v.VISIT_PLAN_ID                     AS id,
+                       v.JOB_ID                             AS evaluationId,
+                       j.NAME                               AS evaluationName,
+                       v.BRANCH_ID     				        AS branchId,
+                       v.BRANCH_CODE 				        AS branchCode,
+                       ct.NAME   				            AS typeChannel,
+                       v.CHANNEL_TO_CODE   				    AS channelCode,
+                       v.CHANNEL_TO_ID     				    AS channelId,
+                       v.CHANNEL_FROM_CODE       			AS auditorCode,
+                       v.CHANNEL_FROM_ID           		    AS auditorId,
+                       v.SCORE         				        AS score,
+                       v.DATE_PLAN                          AS scheduledDate,
+                       v.status                             AS statusEvaluation,
+                       v.VISIT_TIME                         AS visitTime,
+                       v.REVIEW_DATE                        AS reviewDate,
+                       CASE
+                           WHEN v.IS_ACTION_PLAN IS NULL THEN 'Null'
+                           ELSE 'Yes'
+                       END                                  AS actionPlan,
+                       v.USER_REVIEW_NAME                   AS reviewingUser,
+                       v.status                             AS status,
+                       v.CHECKLIST_RESULT_COMMENT           AS checkListResultComment
+ FROM VISIT_PLAN_MAP v
+            JOIN CHANNEL_TYPE ct ON ct.CHANNEL_TYPE_ID = v.CHANNEL_TYPE_ID
+            JOIN SMARTPHONE.JOB j ON j.JOB_ID = v.JOB_ID WHERE v.PARENT_ID = :id AND v.IS_ACTION_PLAN = :actionPlan
+            AND v.JOB_ID IS NOT NULL AND v.CHANNEL_TYPE_ID IS NOT NULL
+
+--getVisitPlanById
+SELECT v.VISIT_PLAN_ID                     AS id,
+                       v.JOB_ID                            AS evaluationId,
+                       j.NAME                              AS evaluationName,
+                       v.BRANCH_ID     				    AS branchId,
+                       v.BRANCH_CODE 				        AS branchCode,
+                       ct.NAME   				            AS typeChannel,
+                       v.CHANNEL_TO_CODE   				AS channelCode,
+                       v.CHANNEL_TO_ID     				AS channelId,
+                       v.CHANNEL_FROM_CODE       			AS auditorCode,
+                       v.CHANNEL_FROM_ID           		AS auditorId,
+                       v.SCORE         				    AS score,
+                       v.DATE_PLAN                         AS scheduledDate,
+                       v.status                                 AS statusEvaluation,
+                       v.VISIT_TIME                         AS visitTime,
+                       v.REVIEW_DATE                        AS reviewDate,
+                       CASE
+                           WHEN v.IS_ACTION_PLAN IS NULL THEN 'No'
+                           ELSE 'Yes'
+                       END                                  AS actionPlan,
+                       v.USER_REVIEW_NAME                   AS reviewingUser,
+                       v.CHECKLIST_RESULT_COMMENT           AS checkListResultComment
+ FROM VISIT_PLAN_MAP v
+            JOIN CHANNEL_TYPE ct ON ct.CHANNEL_TYPE_ID = v.CHANNEL_TYPE_ID
+            JOIN SMARTPHONE.JOB j ON j.JOB_ID = v.JOB_ID WHERE v.PARENT_ID IS NOT NULL AND v.PARENT_ID = :id
+            AND v.JOB_ID IS NOT NULL AND v.CHANNEL_TYPE_ID IS NOT NULL
+
+--searchLast10VisitPlan
+SELECT * FROM
+    (SELECT DISTINCT v.VISIT_PLAN_ID     			AS id,
+                     v.CHANNEL_FROM_CODE 				AS userCode,
+                     v.CHANNEL_FROM_ID   				AS userId,
+                     v.BRANCH_CODE       				AS branchCode,
+                     v.BC_CODE           				AS bcCode,
+                     v.DATE_PLAN         				AS planDate,
+                     v.VISIT_TIME        				AS checkedIn
+     FROM SM.visit_plan_map v
+<#if serverMode?has_content>
+     JOIN SMARTPHONE.PLAN_RESULT pr
+ON v.VISIT_PLAN_ID = pr.VISIT_PLAN_ID
+<#else>
+   JOIN SMARTPHONE.PLAN_RESULT@DBL_SMARTPHONE pr
+        ON v.VISIT_PLAN_ID = pr.VISIT_PLAN_ID
+</#if>
+     WHERE v.status IN (1,2) AND (v.CHECKLIST_RESULT_STATUS IS NULL OR v.CHECKLIST_RESULT_STATUS IN(0,1))
+       AND pr.FILE_PATH IS NOT NULL
+       AND v.VISIT_TIME > ADD_MONTHS(SYSDATE, -6)
+        <#if channelId?has_content>
+            AND v.CHANNEL_TO_ID  =:channelId
+        </#if>
+        <#if channelCode?has_content>
+            AND v.CHANNEL_TO_CODE =:channelCode
+        </#if>
+        <#if objectType?has_content>
+            AND v.OBJECT_TYPE =:objectType
+        </#if>
+     ORDER BY v.DATE_PLAN DESC)
+WHERE ROWNUM <=10

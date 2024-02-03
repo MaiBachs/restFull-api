@@ -1,0 +1,18 @@
+--getProvinceWithListBranchId
+select distinct a.area_code code, a.name, a.province , s.shop_id shopId
+from area a, shop s
+where a.province = s.province
+and a.province is not null and a.district is null
+and s.shop_id IN ( select tree1.shop_id from sm.tbl_shop_tree tree1 where tree1.parent_shop_id = 7282 and tree1.channel_type_id = 3
+<#if userShopId?has_content && userShopId != 7282>
+   and tree1.shop_id IN (select tree.root_id from sm.tbl_shop_tree tree where tree.shop_id = :userShopId)
+</#if>
+and tree1.shop_level = 3)
+ORDER BY a.name ASC
+
+--getAllDistricts
+SELECT * FROM AREA a WHERE a.DISTRICT is not null AND a.PROVINCE = :province AND a.PRECINCT is null  AND a.STREET_BLOCK is null order by a.NAME asc
+
+
+--getListPrecinct
+SELECT * FROM  AREA a WHERE a.DISTRICT = :district AND a.PROVINCE = :province AND a.PRECINCT is not null AND a.STREET_BLOCK is null  order by a.NAME asc

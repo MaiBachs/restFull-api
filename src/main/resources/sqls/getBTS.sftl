@@ -1,0 +1,50 @@
+SELECT DISTINCT bts.bts_id                                id,
+                bts.bts_code                              code,
+                bts.bts_name                              name,
+                1                                         channelTypeId,
+                bts.lats                                  x,
+                bts.longs                                 y,
+                bts.address,
+                bts.NUM_REGISTER                       AS numRegister,
+                TO_CHAR(bts.CREATE_DATE, 'DD/MM/YYYY') AS createDate,
+                shop.shop_code                            shopCode,
+                staff.staff_id                            staffOwnerId,
+                staff.name                                staffOwnerName,
+                staff.staff_code                          staffOwnerCode,
+                staff.tel                                 staffOwnerTel,
+                3                                         objectType
+FROM sm.MAP_BTS bts
+         LEFT JOIN sm.shop shop ON (bts.shop_id = shop.shop_id)
+         LEFT JOIN sm.staff staff ON (bts.staff_id = staff.staff_id)
+WHERE bts.status = 1
+  AND bts.lats IS NOT NULL
+  AND bts.longs IS NOT NULL
+  AND bts.shop_id IN
+      (SELECT stree.shop_id
+       FROM sm.tbl_shop_tree stree
+       WHERE stree.root_id = :shopId)
+<#if province?has_content>
+  AND bts.province = :province
+</#if>
+<#if district?has_content>
+  AND bts.district = :district
+</#if>
+<#if precinct?has_content>
+  AND bts.precinct = :precinct
+</#if>
+<#if channelCode?has_content>
+  AND UPPER(bts.bts_code) LIKE :channelCode
+</#if>
+<#if btsRegisterFrom?has_content>
+  AND bts.NUM_REGISTER >= :btsRegisterFrom
+</#if>
+<#if btsRegisterTo?has_content>
+  AND bts.NUM_REGISTER <= :btsRegisterTo
+</#if>
+<#if btsCreateFromDate?has_content>
+  AND bts.CREATE_DATE >= TO_DATE(:btsCreateFromDate, 'DD/MM/YYYY')
+</#if>
+<#if btsCreateToDate?has_content>
+  AND bts.CREATE_DATE < TO_DATE(:btsCreateToDate, 'DD/MM/YYYY') +1
+</#if>
+ORDER BY bts.bts_name

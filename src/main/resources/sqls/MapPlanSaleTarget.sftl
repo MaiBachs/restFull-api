@@ -1,0 +1,70 @@
+--search
+SELECT ID,
+       BR_CODE      AS brCode,
+       BC_CODE      AS bcCode,
+       STAFF_CODE   AS staffCode,
+       STAFF_ID     AS staffId,
+       TOTAL_TARGET AS totalTarget,
+       TOTAL_RESULT AS totalResult,
+       TOTAL_PLAN   AS totalPlan,
+       CREATE_DATE  AS createDate,
+       CREATE_USER  AS createUser,
+       PLAN_TYPE    AS planType,
+       TARGET_LEVEL AS targetLevel,
+       T1_TARGET    AS t1Target,
+       T1_RESULT    AS t1Result,
+       T2_TARGET    AS t2Target,
+       T2_RESULT    AS t2Result,
+       T3_TARGET    AS t3Target,
+       T3_RESULT    AS t3Result,
+       T4_TARGET    AS t4Target,
+       T4_RESULT    AS t4Result,
+       T5_TARGET    AS t5Target,
+       T5_RESULT    AS t5Result,
+       T6_TARGET    AS t6Target,
+       T6_RESULT    AS t6Result,
+       T7_TARGET    AS t7Target,
+       T7_RESULT    AS t7Result,
+       T8_TARGET    AS t8Target,
+       T8_RESULT    AS t8Result,
+       T9_TARGET    AS t9Target,
+       T9_RESULT    AS t9Result,
+       T10_TARGET   AS t10Target,
+       T10_RESULT   AS t10Result,
+       T11_TARGET   AS t11Target,
+       T11_RESULT   AS t11Result,
+       T12_TARGET   AS t12Target,
+       T12_RESULT   AS t12Result,
+       T1_PLAN      AS t1Plan,
+       T2_PLAN      AS t2Plan,
+       T3_PLAN      AS t3Plan,
+       T4_PLAN      AS t4Plan,
+       T5_PLAN      AS t5Plan,
+       T6_PLAN      AS t6Plan,
+       T7_PLAN      AS t7Plan,
+       T8_PLAN      AS t8Plan,
+       T9_PLAN      AS t9Plan,
+       T10_PLAN     AS t10Plan,
+       T11_PLAN     AS t11Plan,
+       T12_PLAN     AS t12Plan,
+       STATUS       AS status,
+       PARENT_ID    AS parentId
+FROM map_plan_sale_target
+WHERE STATUS > -2
+<#if planType?has_content>
+  AND PLAN_TYPE = :planType
+</#if>
+<#if targetLevel?has_content>
+  AND TARGET_LEVEL = :targetLevel
+</#if>
+<#if brCode?has_content>
+  AND BR_CODE = :brCode
+</#if>
+<#if bcCode?has_content>
+  AND BC_CODE = :bcCode
+</#if>
+<#if staffCode?has_content>
+  AND STAFF_CODE = :staffCode
+</#if>
+  AND TRUNC(PLAN_DATE, 'YEAR') = TRUNC(TO_DATE(:year, 'YYYY'), 'YEAR')
+ORDER BY BR_CODE

@@ -1,0 +1,19 @@
+SELECT new com.spm.viettel.msm.dto.VisitPlanCategoryResultDTO (
+       j.jobId          AS jobId,
+       j.code,
+       j.name,
+       j.parentId       AS parentId,
+       pj.requiredFile  AS requireFile,
+       pj.required      AS require,
+       pj.planJobId     AS planJobId,
+       r.result         AS result,
+       r.filePath       AS filePath,
+       re.name          AS reason)
+from Plan p
+         LEFT JOIN PlanJob pj ON (p.planId = pj.planId)
+         LEFT JOIN Job j ON (j.jobId = pj.jobId)
+         LEFT JOIN PlanResult r ON (r.planJobId = pj.planJobId)
+         LEFT JOIN Reason re ON (r.reasonId = re.reasonId)
+where p.planId = :planId
+  AND r.visitPlanId = :visitPlanId
+  and j.parentId IN (:planJobId)

@@ -1,0 +1,320 @@
+--searchPlanChannelTarget
+SELECT ID,
+       BR_CODE      AS brCode,
+       BC_CODE      AS bcCode,
+       STAFF_CODE   AS staffCode,
+       STAFF_ID     AS staffId,
+       CHANNEL_ID   AS channelId,
+       CHANNEL_CODE AS channelCode,
+       TOTAL_TARGET AS totalTarget,
+       TOTAL_RESULT AS totalResult,
+       TOTAL_PLAN   AS totalPlan,
+       CREATE_DATE  AS createDate,
+       CREATE_USER  AS createUser,
+       PLAN_TYPE    AS planType,
+       TARGET_LEVEL AS targetLevel,
+       TARGET_TYPE AS targetType,
+       T1_TARGET    AS t1Target,
+       T1_RESULT    AS t1Result,
+       T2_TARGET    AS t2Target,
+       T2_RESULT    AS t2Result,
+       T3_TARGET    AS t3Target,
+       T3_RESULT    AS t3Result,
+       T4_TARGET    AS t4Target,
+       T4_RESULT    AS t4Result,
+       T5_TARGET    AS t5Target,
+       T5_RESULT    AS t5Result,
+       T6_TARGET    AS t6Target,
+       T6_RESULT    AS t6Result,
+       T7_TARGET    AS t7Target,
+       T7_RESULT    AS t7Result,
+       T8_TARGET    AS t8Target,
+       T8_RESULT    AS t8Result,
+       T9_TARGET    AS t9Target,
+       T9_RESULT    AS t9Result,
+       T10_TARGET   AS t10Target,
+       T10_RESULT   AS t10Result,
+       T11_TARGET   AS t11Target,
+       T11_RESULT   AS t11Result,
+       T12_TARGET   AS t12Target,
+       T12_RESULT   AS t12Result,
+       T1_PLAN      AS t1Plan,
+       T2_PLAN      AS t2Plan,
+       T3_PLAN      AS t3Plan,
+       T4_PLAN      AS t4Plan,
+       T5_PLAN      AS t5Plan,
+       T6_PLAN      AS t6Plan,
+       T7_PLAN      AS t7Plan,
+       T8_PLAN      AS t8Plan,
+       T9_PLAN      AS t9Plan,
+       T10_PLAN     AS t10Plan,
+       T11_PLAN     AS t11Plan,
+       T12_PLAN     AS t12Plan,
+       child_status AS childStatus,
+       PARENT_ID    AS parentId
+FROM map_plan_channel_target
+WHERE STATUS > -1
+<#if planType?has_content>
+  AND PLAN_TYPE = :planType
+</#if>
+<#if targetLevel?has_content>
+  AND TARGET_LEVEL = :targetLevel
+</#if>
+<#if brCode?has_content>
+  AND BR_CODE = :brCode
+</#if>
+<#if bcCode?has_content>
+  AND BC_CODE = :bcCode
+</#if>
+<#if staffCode?has_content>
+  AND STAFF_CODE = :staffCode
+</#if>
+<#if channelId?has_content>
+  AND CHANNEL_ID = :channelId
+</#if>
+  AND TRUNC(PLAN_DATE, 'YEAR') = TRUNC(TO_DATE(:year, 'YYYY'), 'YEAR')
+ORDER BY BR_CODE
+
+--searchExportTargetChannelLevelSale
+SELECT DISTINCT t.BR_CODE       AS brCode,
+                t.CHANNEL_CODE  as channelTypeName,
+                t.CHANNEL_ID    AS channelTypeId,
+                t2.TOTAL_TARGET AS newTarget,
+                t2.TOTAL_PLAN   AS newPlan,
+                t2.TOTAL_RESULT AS newResult,
+                t3.TOTAL_TARGET AS accummTarget,
+                t3.TOTAL_RESULT AS accummResult
+FROM map_plan_channel_target t
+            LEFT JOIN map_plan_channel_target t2
+                      ON (t.BR_CODE = t2.BR_CODE AND t.PLAN_TYPE = t2.PLAN_TYPE AND t2.CHANNEL_ID = t.CHANNEL_ID AND
+                          t2.PLAN_DATE = t.PLAN_DATE AND t2.TARGET_TYPE = 1)
+            LEFT JOIN map_plan_channel_target t3
+                      ON (t.BR_CODE = t3.BR_CODE AND t.PLAN_TYPE = t3.PLAN_TYPE AND t3.CHANNEL_ID = t.CHANNEL_ID AND
+                          t3.PLAN_DATE = t.PLAN_DATE AND t3.TARGET_TYPE = 2)
+WHERE t.TARGET_LEVEL = 1
+  AND TRUNC(t.PLAN_DATE, 'YEAR') = TRUNC(TO_DATE(:year, 'YYYY'), 'YEAR')
+<#if brCode?has_content>
+  AND t.BR_CODE = :brCode
+</#if>
+<#if channelTypeId?has_content>
+  AND t.CHANNEL_ID = :channelTypeId
+</#if>
+ORDER BY t.BR_CODE, t.CHANNEL_CODE
+
+
+--searchExportTargetChannelLevelBCAccum
+SELECT *
+FROM (
+<#if targetLevel == 2>
+                   SELECT tblOrg.BR_CODE      AS brCode,
+                          tblOrg.BC_CODE      AS bcCode,
+                          tblOrg.STAFF_CODE   AS staffCode,
+                          tblOrg.CHANNEL_CODE AS channelTypeName,
+                          tblOrg.CHANNEL_ID   AS channelTypeId,
+                          dn.TOTAL_TARGET     AS newTarget,
+                          dn.TOTAL_PLAN       AS newPlan,
+                          dn.TOTAL_RESULT     AS newResult,
+                          dn.T1_TARGET        AS t1NewTarget,
+                          dn.T1_PLAN          AS t1NewPlan,
+                          dn.T1_RESULT        AS t1NewResult,
+                          dn.T2_TARGET        AS t2NewTarget,
+                          dn.T2_PLAN          AS t2NewPlan,
+                          dn.T2_RESULT        AS t2NewResult,
+                          dn.T3_TARGET        AS t3NewTarget,
+                          dn.T3_PLAN          AS t3NewPlan,
+                          dn.T3_RESULT        AS t3NewResult,
+                          dn.T4_TARGET        AS t4NewTarget,
+                          dn.T4_PLAN          AS t4NewPlan,
+                          dn.T4_RESULT        AS t4NewResult,
+                          dn.T5_TARGET        AS t5NewTarget,
+                          dn.T5_PLAN          AS t5NewPlan,
+                          dn.T5_RESULT        AS t5NewResult,
+                          dn.T6_TARGET        AS t6NewTarget,
+                          dn.T6_PLAN          AS t6NewPlan,
+                          dn.T6_RESULT        AS t6NewResult,
+                          dn.T7_TARGET        AS t7NewTarget,
+                          dn.T7_PLAN          AS t7NewPlan,
+                          dn.T7_RESULT        AS t7NewResult,
+                          dn.T8_TARGET        AS t8NewTarget,
+                          dn.T8_PLAN          AS t8NewPlan,
+                          dn.T8_RESULT        AS t8NewResult,
+                          dn.T9_TARGET        AS t9NewTarget,
+                          dn.T9_PLAN          AS t9NewPlan,
+                          dn.T9_RESULT        AS t9NewResult,
+                          dn.T10_TARGET       AS t10NewTarget,
+                          dn.T10_PLAN         AS t10NewPlan,
+                          dn.T10_RESULT       AS t10NewResult,
+                          dn.T11_TARGET       AS t11NewTarget,
+                          dn.T11_PLAN         AS t11NewPlan,
+                          dn.T11_RESULT       AS t11NewResult,
+                          dn.T12_TARGET       AS t12NewTarget,
+                          dn.T12_PLAN         AS t12NewPlan,
+                          dn.T12_RESULT       AS t12NewResult,
+                          ac.TOTAL_TARGET     AS accummTarget,
+                          ac.TOTAL_RESULT     AS accummResult,
+                          ac.T1_TARGET        AS t1AccummTarget,
+                          ac.T1_RESULT        AS t1AccummResult,
+                          ac.T2_TARGET        AS t2AccummTarget,
+                          ac.T2_RESULT        AS t2AccummResult,
+                          ac.T3_TARGET        AS t3AccummTarget,
+                          ac.T3_RESULT        AS t3AccummResult,
+                          ac.T4_TARGET        AS t4AccummTarget,
+                          ac.T4_RESULT        AS t4AccummResult,
+                          ac.T5_TARGET        AS t5AccummTarget,
+                          ac.T5_RESULT        AS t5AccummResult,
+                          ac.T6_TARGET        AS t6AccummTarget,
+                          ac.T6_RESULT        AS t6AccummResult,
+                          ac.T7_TARGET        AS t7AccummTarget,
+                          ac.T7_RESULT        AS t7AccummResult,
+                          ac.T8_TARGET        AS t8AccummTarget,
+                          ac.T8_RESULT        AS t8AccummResult,
+                          ac.T9_TARGET        AS t9AccummTarget,
+                          ac.T9_RESULT        AS t9AccummResult,
+                          ac.T10_TARGET       AS t10AccummTarget,
+                          ac.T10_RESULT       AS t10AccummResult,
+                          ac.T11_TARGET       AS t11AccummTarget,
+                          ac.T11_RESULT       AS t11AccummResult,
+                          ac.T12_TARGET       AS t12AccummTarget,
+                          ac.T12_RESULT       AS t12AccummResult
+                   FROM (SELECT DISTINCT org.BR_CODE,
+                                         org.BC_CODE,
+                                         org.STAFF_CODE,
+                                         org.CHANNEL_CODE,
+                                         org.CHANNEL_ID,
+                                         org.TARGET_LEVEL,
+                                         org.PLAN_DATE
+                         FROM SM.MAP_PLAN_CHANNEL_TARGET org
+                         WHERE org.TARGET_LEVEL = 2) tblOrg
+                               LEFT JOIN SM.MAP_PLAN_CHANNEL_TARGET dn
+                                         ON (tblOrg.BR_CODE = dn.BR_CODE AND tblOrg.BC_CODE = dn.BC_CODE AND
+                                             tblOrg.TARGET_LEVEL = dn.TARGET_LEVEL AND
+                                             tblOrg.CHANNEL_ID = dn.CHANNEL_ID AND
+                                             tblOrg.PLAN_DATE = dn.PLAN_DATE AND dn.TARGET_TYPE = 1 AND
+                                             dn.TARGET_LEVEL = 2)
+                               LEFT JOIN SM.MAP_PLAN_CHANNEL_TARGET ac
+                                         ON (tblOrg.BR_CODE = ac.BR_CODE AND tblOrg.BC_CODE = ac.BC_CODE AND
+                                             tblOrg.TARGET_LEVEL = ac.TARGET_LEVEL AND
+                                             tblOrg.CHANNEL_ID = ac.CHANNEL_ID AND
+                                             tblOrg.PLAN_DATE = ac.PLAN_DATE AND ac.TARGET_TYPE = 2 AND
+                                             ac.TARGET_LEVEL = 2)
+                   WHERE TO_CHAR(tblOrg.PLAN_DATE, 'YYYY') = :year
+       <#if channelTypeId?has_content>
+  AND tblOrg.CHANNEL_ID = :channelTypeId
+       </#if>
+       <#if brCode?has_content>
+ AND tblOrg.BR_CODE = :brCode
+       </#if>
+       <#if bcCode?has_content>
+ AND tblOrg.BR_CODE = :bcCode
+       </#if>
+</#if>
+<#if targetLevel == 3>
+                   SELECT tblOrg.BR_CODE      AS brCode,
+                          tblOrg.BC_CODE      AS bcCode,
+                          tblOrg.STAFF_CODE   AS staffCode,
+                          tblOrg.CHANNEL_CODE AS channelTypeName,
+                          tblOrg.CHANNEL_ID   AS channelTypeId,
+                          dn.TOTAL_TARGET     AS newTarget,
+                          dn.TOTAL_PLAN       AS newPlan,
+                          dn.TOTAL_RESULT     AS newResult,
+                          dn.T1_TARGET        AS t1NewTarget,
+                          dn.T1_PLAN          AS t1NewPlan,
+                          dn.T1_RESULT        AS t1NewResult,
+                          dn.T2_TARGET        AS t2NewTarget,
+                          dn.T2_PLAN          AS t2NewPlan,
+                          dn.T2_RESULT        AS t2NewResult,
+                          dn.T3_TARGET        AS t3NewTarget,
+                          dn.T3_PLAN          AS t3NewPlan,
+                          dn.T3_RESULT        AS t3NewResult,
+                          dn.T4_TARGET        AS t4NewTarget,
+                          dn.T4_PLAN          AS t4NewPlan,
+                          dn.T4_RESULT        AS t4NewResult,
+                          dn.T5_TARGET        AS t5NewTarget,
+                          dn.T5_PLAN          AS t5NewPlan,
+                          dn.T5_RESULT        AS t5NewResult,
+                          dn.T6_TARGET        AS t6NewTarget,
+                          dn.T6_PLAN          AS t6NewPlan,
+                          dn.T6_RESULT        AS t6NewResult,
+                          dn.T7_TARGET        AS t7NewTarget,
+                          dn.T7_PLAN          AS t7NewPlan,
+                          dn.T7_RESULT        AS t7NewResult,
+                          dn.T8_TARGET        AS t8NewTarget,
+                          dn.T8_PLAN          AS t8NewPlan,
+                          dn.T8_RESULT        AS t8NewResult,
+                          dn.T9_TARGET        AS t9NewTarget,
+                          dn.T9_PLAN          AS t9NewPlan,
+                          dn.T9_RESULT        AS t9NewResult,
+                          dn.T10_TARGET       AS t10NewTarget,
+                          dn.T10_PLAN         AS t10NewPlan,
+                          dn.T10_RESULT       AS t10NewResult,
+                          dn.T11_TARGET       AS t11NewTarget,
+                          dn.T11_PLAN         AS t11NewPlan,
+                          dn.T11_RESULT       AS t11NewResult,
+                          dn.T12_TARGET       AS t12NewTarget,
+                          dn.T12_PLAN         AS t12NewPlan,
+                          dn.T12_RESULT       AS t12NewResult,
+                          ac.TOTAL_TARGET     AS accummTarget,
+                          ac.TOTAL_RESULT     AS accummResult,
+                          ac.T1_TARGET        AS t1AccummTarget,
+                          ac.T1_RESULT        AS t1AccummResult,
+                          ac.T2_TARGET        AS t2AccummTarget,
+                          ac.T2_RESULT        AS t2AccummResult,
+                          ac.T3_TARGET        AS t3AccummTarget,
+                          ac.T3_RESULT        AS t3AccummResult,
+                          ac.T4_TARGET        AS t4AccummTarget,
+                          ac.T4_RESULT        AS t4AccummResult,
+                          ac.T5_TARGET        AS t5AccummTarget,
+                          ac.T5_RESULT        AS t5AccummResult,
+                          ac.T6_TARGET        AS t6AccummTarget,
+                          ac.T6_RESULT        AS t6AccummResult,
+                          ac.T7_TARGET        AS t7AccummTarget,
+                          ac.T7_RESULT        AS t7AccummResult,
+                          ac.T8_TARGET        AS t8AccummTarget,
+                          ac.T8_RESULT        AS t8AccummResult,
+                          ac.T9_TARGET        AS t9AccummTarget,
+                          ac.T9_RESULT        AS t9AccummResult,
+                          ac.T10_TARGET       AS t10AccummTarget,
+                          ac.T10_RESULT       AS t10AccummResult,
+                          ac.T11_TARGET       AS t11AccummTarget,
+                          ac.T11_RESULT       AS t11AccummResult,
+                          ac.T12_TARGET       AS t12AccummTarget,
+                          ac.T12_RESULT       AS t12AccummResult
+                   FROM (SELECT DISTINCT org.BR_CODE,
+                          org.BC_CODE,
+                          org.STAFF_CODE,
+                          org.CHANNEL_CODE,
+                          org.CHANNEL_ID,
+                          org.TARGET_LEVEL,
+                          org.PLAN_DATE
+                          FROM SM.MAP_PLAN_CHANNEL_TARGET org
+                          WHERE org.TARGET_LEVEL = 3) tblOrg
+                          LEFT JOIN SM.MAP_PLAN_CHANNEL_TARGET dn
+                                      ON (tblOrg.BR_CODE = dn.BR_CODE AND tblOrg.BC_CODE = dn.BC_CODE AND
+                          tblOrg.STAFF_CODE = dn.STAFF_CODE AND
+                          tblOrg.TARGET_LEVEL = dn.TARGET_LEVEL AND
+                          tblOrg.CHANNEL_ID = dn.CHANNEL_ID AND
+                          tblOrg.PLAN_DATE = dn.PLAN_DATE AND dn.TARGET_TYPE = 1 AND
+                          dn.TARGET_LEVEL = 3)
+                          LEFT JOIN SM.MAP_PLAN_CHANNEL_TARGET ac
+                          ON (tblOrg.BR_CODE = ac.BR_CODE AND tblOrg.BC_CODE = ac.BC_CODE AND
+                          tblOrg.STAFF_CODE = ac.STAFF_CODE AND
+                          tblOrg.TARGET_LEVEL = ac.TARGET_LEVEL AND
+                          tblOrg.CHANNEL_ID = ac.CHANNEL_ID AND
+                          tblOrg.PLAN_DATE = ac.PLAN_DATE AND ac.TARGET_TYPE = 2 AND
+                          ac.TARGET_LEVEL = 3)
+     WHERE TO_CHAR(tblOrg.PLAN_DATE, 'YYYY') = :year
+       <#if channelTypeId?has_content>
+  AND tblOrg.CHANNEL_ID = :channelTypeId
+       </#if>
+       <#if brCode?has_content>
+ AND tblOrg.BR_CODE = :brCode
+       </#if>
+       <#if bcCode?has_content>
+ AND tblOrg.BC_CODE = :bcCode
+       </#if>
+       <#if staffCode?has_content>
+  AND tblOrg.STAFF_CODE = :staffCode
+       </#if>
+</#if>
+     ) tbl
+ORDER BY tbl.brCode, tbl.bcCode NULLS FIRST, tbl.staffCode NULLS FIRST, tbl.channelTypeName

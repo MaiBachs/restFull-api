@@ -1,0 +1,19 @@
+SELECT new com.spm.viettel.msm.dto.VisitPlanCategoryResultDTO(j.jobId         AS jobId,
+       j.code,
+       j.name,
+       j.parentId      AS parentId,
+       pj.requiredFile AS requireFile,
+       pj.planJobId    AS planJobId,
+       p.planId        AS planId)
+from Plan p,
+     PlanJob pj,
+     Job j
+where p.planId = pj.planId
+  AND j.jobId = pj.jobId
+  AND p.planId = :planId
+<#if parentId?has_content>
+    and j.parentId IN (:parentId)
+<#else>
+  and j.parentId is null
+</#if>
+order by pj.idx

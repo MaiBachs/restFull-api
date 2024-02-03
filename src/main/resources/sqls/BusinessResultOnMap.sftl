@@ -1,0 +1,26 @@
+--getActivationDetail
+SELECT LAST_UPDATE
+     , PRE_LAST_DATE_ACTIVE
+     , PRE_ACTIVE_LAST_DAY
+     , PRE_ACUM_N
+     , PRE_ACUM_N_1 AS preAcumN1
+     , POST_LAST_DATE_ACTIVE
+     , POST_ACTIVE_LAST_DAY
+     , POST_ACUM_N
+     , POST_ACUM_N_1 AS postAcumN1
+     , TOTAL_ACUM_N
+     , TOTAL_ACUM_N_1 AS totalAcumN1
+     , PRE_ACTIVE_NO_RC_LAST_DAY
+     , PRE_ACTIVE_RC_LAST_DAY
+     , PRE_ACUM_N_NO_RC
+     , PRE_ACUM_N_RC
+     , PRE_ACUM_N_1_NO_RC AS preAcumN1NoRc
+     , PRE_ACUM_N_1_RC AS preAcumN1Rc
+FROM BUSINESS_RESULT_ON_MAP
+WHERE TRUNC(CALCULATE_MONTH, 'MM') = TRUNC(SYSDATE, 'MM')
+<#if isStaff == "true">
+AND CHANNEL_CODE = (SELECT staff_code FROM STAFF WHERE   staff_id = :channelId)
+<#else>
+AND CHANNEL_CODE = (SELECT shop_code FROM SHOP WHERE shop_id = :channelId)
+</#if>
+  and ROWNUM < 2

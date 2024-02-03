@@ -1,0 +1,153 @@
+--searchListBtsConfig
+SELECT btsc.id,
+       btsc.BTS_CODE                                                 AS btsCode,
+       btsc.STATUS                                                   AS status,
+       btsc.BR_CODE                                                  AS brCode,
+       btsc.START_DATE                                               AS startDate,
+       btsc.END_DATE                                                 AS endDate,
+       btsc.MAP_SALE_POLICY_ID                                       AS salePolicyId,
+       btsc.CREATED_DATE                                             AS createdDate,
+       btsc.UPDATE_DATE                                              AS updateDate,
+       btsc.CREATED_USER                                             AS createdUser,
+       btsc.UPDATE_USER                                              AS updateUser,
+       msp.NAME                                                      AS salePolicyName,
+       (CASE WHEN btsc.STATUS > 0 THEN 'Active' ELSE 'Inactive' END) AS statusString,
+       TO_CHAR(btsc.START_DATE, 'DD/MM/YYYY')                        AS sStartDate,
+       TO_CHAR(btsc.END_DATE, 'DD/MM/YYYY')                          AS sEndDate
+FROM map_sale_bts_config btsc,
+     MAP_SALE_POLICY msp
+WHERE btsc.MAP_SALE_POLICY_ID = msp.id
+<#if brCode?has_content>
+  AND btsc.BR_CODE = :brCode
+</#if>
+<#if salePolicyId?has_content>
+  AND btsc.MAP_SALE_POLICY_ID = :salePolicyId
+</#if>
+<#if btsCode?has_content>
+  AND btsc.BTS_CODE LIKE ('%' || :btsCode || '%')
+</#if>
+<#if status?has_content>
+  AND btsc.STATUS = :status
+</#if>
+<#if createdDate?has_content>
+  AND btsc.CREATED_DATE = :createdDate
+</#if>
+<#if updateDate?has_content>
+  AND btsc.UPDATE_DATE = :updateDate
+</#if>
+<#if createdUser?has_content>
+  AND btsc.CREATED_USER = :createdUser
+</#if>
+<#if updateUser?has_content>
+  AND btsc.UPDATE_USER = :updateUser
+</#if>
+<#if startDate?has_content>
+  AND btsc.START_DATE >= TO_DATE(:startDate, 'DD/MM/YYYY')
+</#if>
+<#if endDate?has_content>
+  AND btsc.END_DATE < TO_DATE(:endDate, 'DD/MM/YYYY') + 1
+</#if>
+AND NOT (btsc.MAP_SALE_POLICY_ID = 5 AND btsc.STATUS = 0)
+ORDER BY btsc.BR_CODE, btsc.BTS_CODE, msp.NAME
+
+--findListBtsByCode
+SELECT DISTINCT BTS_CODE AS name FROM MAP_SALE_BTS_CONFIG WHERE BTS_CODE LIKE :btsCode AND BR_CODE = :brCode ORDER BY BTS_CODE
+
+--findByBrCodeAndBtsCodeAndSalePolicyId
+SELECT * FROM MAP_SALE_BTS_CONFIG t WHERE upper(t.BR_CODE) = upper(:brCode) AND upper(t.BTS_CODE) = upper(:btsCode) AND t.map_sale_policy_id = :salePolicyId
+
+--hasSaleConfigAvailable
+SELECT COUNT(*)
+FROM map_sale_bts_config
+WHERE STATUS = 1
+  AND MAP_SALE_POLICY_ID <> 5
+<#if brCode?has_content>
+  AND BR_CODE = :brCode
+</#if>
+<#if btsCode?has_content>
+  AND BTS_CODE = :btsCode
+</#if>
+  AND SYSDATE >= START_DATE
+  AND (SYSDATE < END_DATE + 1 OR END_DATE IS NULL)
+
+
+--getListBTS
+SELECT DISTINCT bts.bts_id                                id,
+                bts.bts_code                              code,
+                bts.bts_name                              name,
+                1                                         channelTypeId,
+                bts.lats                                  x,
+                bts.longs                                 y,
+                bts.address,
+                bts.NUM_REGISTER                       AS numRegister,
+                TO_CHAR(bts.CREATE_DATE, 'DD/MM/YYYY') AS createDate,
+                shop.shop_code                            shopCode,
+                staff.staff_id                            staffOwnerId,
+                staff.name                                staffOwnerName,
+                staff.staff_code                          staffOwnerCode,
+                staff.tel                                 staffOwnerTel,
+                3                                         objectType
+FROM sm.MAP_BTS bts
+            LEFT JOIN sm.shop shop ON (bts.shop_id = shop.shop_id)
+            LEFT JOIN sm.staff staff ON (bts.staff_id = staff.staff_id)
+WHERE bts.status = 1
+  AND bts.lats IS NOT NULL
+  AND bts.longs IS NOT NULL
+  AND bts.shop_id IN
+      (SELECT stree.shop_id
+       FROM sm.tbl_shop_tree stree
+       WHERE stree.root_id = :shopId)
+<#if province?has_content>
+  AND bts.province = :province
+</#if>
+<#if district?has_content>
+  AND bts.district = :district
+</#if>
+<#if precinct?has_content>
+  AND bts.precinct = :precinct
+</#if>
+<#if channelCode?has_content>
+  AND UPPER(bts.bts_code) LIKE :channelCode
+</#if>
+<#if btsRegisterFrom?has_content>
+  AND bts.NUM_REGISTER >= :btsRegisterFrom
+</#if>
+<#if btsRegisterTo?has_content>
+  AND bts.NUM_REGISTER <= :btsRegisterTo
+</#if>
+<#if btsCreateFromDate?has_content>
+  AND bts.CREATE_DATE >= TO_DATE(:btsCreateFromDate, 'DD/MM/YYYY')
+</#if>
+<#if btsCreateToDate?has_content>
+  AND bts.CREATE_DATE < TO_DATE(:btsCreateToDate, 'DD/MM/YYYY') +1
+</#if>
+ORDER BY bts.bts_name
+
+--getListSaleBtsSummary
+SELECT  msbs.BR_CODE                            brCode,
+        msbs.BTS_CODE                           btsCode,
+        msbs.MAP_SALE_POLICY_ID                 mapSalePolicyId,
+        msp.NAME                                mapSalePolicyName,
+        SUM(msbs.PLAN_COUNT)                    planCount,
+        SUM(msbs.SALE_RESULT)                   saleResult
+FROM sm.MAP_SALE_BTS_SUMMARY msbs
+         JOIN sm.MAP_SALE_POLICY msp
+              ON msbs.MAP_SALE_POLICY_ID = msp.id
+WHERE 1=1
+<#if btsCodeList?has_content>
+   AND msbs.BTS_CODE IN (:btsCodeList)
+</#if>
+<#if brCodeList?has_content>
+   AND msbs.BR_CODE IN (:brCodeList)
+</#if>
+<#if btsSalePolicyId?has_content>
+   AND msbs.MAP_SALE_POLICY_ID = :btsSalePolicyId
+</#if>
+<#if btsSaleFrom?has_content>
+   AND msbs.CALCULATE_DATE >= TO_DATE(:btsSaleFrom, 'DD/MM/YYYY')
+</#if>
+<#if btsSaleTo?has_content>
+   AND msbs.CALCULATE_DATE < TO_DATE(:btsSaleTo, 'DD/MM/YYYY') + 1
+</#if>
+GROUP BY msbs.BR_CODE, msbs.BTS_CODE, msbs.MAP_SALE_POLICY_ID, msp.NAME
+

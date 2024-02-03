@@ -1,0 +1,56 @@
+--getListChannelTypeWithGroup
+SELECT results.type,
+       results.channelTypeId,
+       results.channelName,
+       results.channelGroupName,
+       results.objectType
+FROM
+    (SELECT 1 TYPE,
+            a.channel_type_id channelTypeId,
+            b.name channelName,
+            c.name channelGroupName,
+            b.object_type objectType,
+            c.ORDERS
+     FROM sm.channel_type_map a,
+          sm.channel_type b,
+          sm.channel_group c
+     WHERE a.channel_type_id = b.channel_type_id
+       AND a.GROUP_ID = c.channel_group_id
+       AND b.CHANNEL_TYPE_ID NOT IN (select VALUE from SM.APP_PARAMS where type = 'BM_MAP_IGNORE_CHANNEL_TYPE'  and status=1)
+     UNION SELECT 2 TYPE,
+                  OTHER_CHANNEL_TYPE_ID channelTypeId,
+                  NAME channelName,
+                  '' channelGroupName,
+                  '' objectType,
+                  999 ORDERS
+     FROM OTHER_OBJECT_TYPE
+     WHERE STATUS=1) results
+ORDER BY results.ORDERS ASC
+
+--getChannelUnit
+<#if ownerId?has_content && number==2>
+   SELECT ctype.IS_VT_UNIT FROM CHANNEL_TYPE ctype, STAFF s WHERE ctype.CHANNEL_TYPE_ID = s.CHANNEL_TYPE_ID AND s.STAFF_ID=:ownerId
+   AND ROWNUM <2
+</#if>
+<#if ownerId?has_content && number!=2>
+   SELECT ctype.IS_VT_UNIT FROM CHANNEL_TYPE ctype, SHOP s WHERE ctype.CHANNEL_TYPE_ID = s.CHANNEL_TYPE_ID AND s.SHOP_ID=:ownerId
+   AND ROWNUM <2
+</#if>
+
+
+--findChannelByID
+SELECT c.CHANNEL_TYPE_ID AS channelTypeId, c.name AS channelName, c.code AS channelCode
+    FROM CHANNEL_TYPE c WHERE c.CHANNEL_TYPE_ID = :channelTypeId
+
+--findChannelTypeByName
+SELECT c.CHANNEL_TYPE_ID AS channelTypeId, c.name AS channelName FROM CHANNEL_TYPE c WHERE c.NAME =:name
+
+--findChannelByIDAndName
+SELECT c.CHANNEL_TYPE_ID AS channelTypeId, c.NAME AS name
+    FROM CHANNEL_TYPE c WHERE 1=1
+<#if channelTypeId?has_content>
+    And c.CHANNEL_TYPE_ID = :channelTypeId
+</#if>
+<#if channelTypeName?has_content>
+     AND c.NAME = :channelTypeName
+</#if>

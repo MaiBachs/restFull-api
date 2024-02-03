@@ -1,0 +1,27 @@
+--getListShopTree
+SELECT DISTINCT shop_id as shopId, shop_code as code, shop_name as name
+FROM sm.tbl_shop_tree
+WHERE parent_shop_id = :parentShopId
+<#if level == 3>
+    AND channel_type_id = 3 AND SHOP_CODE LIKE '%BR' OR SHOP_CODE = 'BR_TEST'
+</#if>
+  AND shop_level = :level
+<#if level?has_content && userShopId?has_content>
+    <#if level == 3 && userShopId != 7282>
+        AND shop_id IN ( select tree.root_id from sm.tbl_shop_tree tree where tree.shop_id = :userShopId )
+    </#if>
+</#if>
+<#if level == 4>
+  AND channel_type_id = 2
+    <#if shopId != 0>
+    AND shop_id = :shopId
+    </#if>
+</#if>
+ORDER BY shop_code, shop_name
+
+--getListBranches
+SELECT DISTINCT shop_id shopId, shop_code code, shop_name name
+from sm.tbl_shop_tree
+where parent_shop_id = :parentShopId
+  and shop_level = :level
+

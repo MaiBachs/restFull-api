@@ -1,0 +1,13 @@
+SELECT new com.spm.viettel.msm.repository.smartphone.entity.AppParams
+(
+       a.value,
+       a.name,
+       a.code
+)
+FROM AppParams a
+WHERE a.type = :paramType
+<#if code?has_content>
+    AND a.code = :code
+</#if>
+  AND status = 1
+ORDER BY a.name

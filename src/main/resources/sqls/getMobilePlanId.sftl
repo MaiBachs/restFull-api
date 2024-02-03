@@ -1,0 +1,5 @@
+SELECT j.planId AS id
+FROM PlanResult r,PlanJob j
+WHERE   r.planJobId = j.planJobId
+        AND r.visitPlanId = :visitPlanId
+        AND rownum < 2

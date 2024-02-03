@@ -1,0 +1,35 @@
+SELECT new com.spm.viettel.msm.dto.ExportAuditorDto(
+       sv.branchCode,
+       sv.branchId,
+       sv.auditorId,
+       sf.staffCode,
+       sv.channelTypeId,
+       ct.name,
+        s.shopId,
+        s.shopCode,
+       sv.updatedBy,
+       sv.updatedDate)
+FROM MapAuditorCheckList sv
+JOIN ChannelType ct ON ct.channelTypeId = sv.channelTypeId
+JOIN StaffSmartPhone sf ON sf.staffId = sv.auditorId
+JOIN ShopSmartPhone s ON s.shopId = sv.shopId
+WHERE 1=1
+<#if branchId?has_content>
+    AND sv.branchId = :branchId
+</#if>
+<#if channelTypeId?has_content>
+    AND sv.channelTypeId = :channelTypeId
+</#if>
+<#if auditorId?has_content>
+     AND sv.auditorId =  :auditorId
+</#if>
+<#if shopChannelId?has_content>
+     AND sv.shopId =  :shopChannelId
+</#if>
+<#if fromDate?has_content>
+     AND sv.updatedDate >= TO_DATE(:fromDate,'dd/MM/yyyy')
+</#if>
+<#if toDate?has_content>
+     AND sv.updatedDate <= TO_DATE(:toDate,'dd/MM/yyyy')+1
+</#if>
+ORDER BY sv.branchCode DESC

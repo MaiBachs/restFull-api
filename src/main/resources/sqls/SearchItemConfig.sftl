@@ -1,0 +1,37 @@
+SELECT
+	E.JOB_ID AS evaluationId,
+	E.NAME AS evaluationName,
+	G.JOB_ID AS groupId,
+	G.NAME AS groupName,
+	I.JOB_ID AS jobId,
+	I.NAME AS jobName,
+	CT.NAME AS channelType,
+	IC.CHANNEL_TYPE_ID AS channelTypeId,
+	IC.ID AS id,
+    IC.LAST_UPDATE AS lastUpdate
+FROM SMARTPHONE.JOB E
+INNER JOIN SMARTPHONE.JOB G ON
+	G.PARENT_ID = E.JOB_ID
+	<#if groupId?has_content>
+	    AND G.JOB_ID = :groupId
+	</#if>
+INNER JOIN SMARTPHONE.JOB I ON
+	I.PARENT_ID = G.JOB_ID
+INNER JOIN SMARTPHONE.ITEM_CONFIG IC ON
+	IC.JOB_ID = I.JOB_ID
+	AND IC.STATUS = 1
+	<#if fromDate?has_content>
+	    AND IC.LAST_UPDATE >= TO_DATE(:fromDate, 'DD-MM-YYYY')
+	</#if>
+	<#if toDate?has_content>
+    	AND IC.LAST_UPDATE <= TO_DATE(:toDate, 'DD-MM-YYYY') + 1
+	</#if>
+    <#if channelTypeId?has_content>
+		AND IC.CHANNEL_TYPE_ID = :channelTypeId
+    </#if>
+    <#if evaluationId?has_content>
+		AND IC.EVALUATION_ID = :evaluationId
+    </#if>
+INNER JOIN SMARTPHONE.CHANNEL_TYPE CT ON
+    CT.CHANNEL_TYPE_ID = IC.CHANNEL_TYPE_ID
+ORDER BY IC.LAST_UPDATE DESC

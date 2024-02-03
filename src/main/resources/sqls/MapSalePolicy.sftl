@@ -1,0 +1,36 @@
+--getListSalePolicyWithSaleTime
+SELECT tmp.id,
+       tmp.name,
+       tmp.content,
+       tmp.status,
+       tmp.startDate,
+       tmp.endDate,
+       CASE WHEN tmp.saleTime = '->' THEN REPLACE(tmp.saleTime, '->', '') ELSE tmp.saleTime END AS saleTime
+FROM (
+         SELECT sp.id,
+                sp.name,
+                sp.content,
+                sp.status,
+                sp.start_date                                                       AS startDate,
+                sp.end_date                                                         AS endDate,
+                listagg(cnf.TIME_FROM || '->' || cnf.TIME_TO, '; ')
+                        within group (order by cnf.TIME_FROM || '-' || cnf.TIME_TO) AS saleTime
+         FROM map_sale_policy sp
+                  LEFT JOIN map_sale_time_config cnf ON (sp.ID = cnf.map_sale_policy_id and cnf.status <> -1)
+         WHERE 1=1
+<#if name?has_content>
+           AND LOWER(sp.name) LIKE LOWER('%' || :name || '%')
+</#if>
+<#if status?has_content>
+           AND sp.status = :status
+<#else>
+        AND sp.status <> -1
+</#if>
+<#if startDate?has_content>
+           AND sp.start_date >= TO_DATE(:startDate, 'DD/MM/YYYY')
+</#if>
+<#if endDate?has_content>
+           AND sp.end_date < TO_DATE(:endDate, 'DD/MM/YYYY') + 1
+</#if>
+GROUP BY sp.id, sp.name, sp.content, sp.status, sp.start_date, sp.end_date
+ORDER BY sp.id DESC) tmp

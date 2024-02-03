@@ -1,0 +1,38 @@
+SELECT  new com.spm.viettel.msm.dto.EvaluationDetailsDTO(
+        sv.id,
+        sv.branchId,
+        sv.branchCode,
+        sv.channelTypeId,
+        ct.name,
+        sv.jobId,
+        j.code,
+        sv.quantityPerMonth,
+        sv.approvalScore,
+        TO_CHAR(sv.dateEvaluation1, 'dd/MM/yyyy'),
+        TO_CHAR(sv.dateEvaluation2, 'dd/MM/yyyy'),
+        TO_CHAR(sv.dateEvaluation3, 'dd/MM/yyyy'),
+        TO_CHAR(sv.dateEvaluation4, 'dd/MM/yyyy'),
+        sv.createdBy,
+        sv.createdDate,
+        sv.updatedBy,
+        sv.updatedDate)
+FROM MapChannelTypeCheckList sv
+JOIN ChannelType ct ON ct.channelTypeId = sv.channelTypeId
+JOIN Job j ON j.jobId = sv.jobId
+WHERE 1=1
+<#if branchId?has_content>
+    AND sv.branchId = :branchId
+</#if>
+<#if channelTypeId?has_content>
+    AND sv.channelTypeId = :channelTypeId
+</#if>
+<#if jobId?has_content>
+     AND sv.jobId =  :jobId
+</#if>
+<#if fromDate?has_content>
+     AND sv.updatedDate >= TO_DATE(:fromDate,'dd/MM/yyyy')
+</#if>
+<#if toDate?has_content>
+     AND sv.updatedDate <= TO_DATE(:toDate,'dd/MM/yyyy') + 1
+</#if>
+ORDER BY sv.updatedDate DESC

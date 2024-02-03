@@ -1,0 +1,55 @@
+SELECT DISTINCT sp.shop_id id,
+                sp.shop_code code,
+                sp.name name,
+                sp.channel_type_id channelTypeId,
+                sp.address address,
+                sp.x x,
+                sp.y y,
+                sp.tel tel,
+                1 channelObjectType,
+                '-1' rank,
+                man.staff_id staffOwnerId,
+                man.name staffOwnerName,
+                man.staff_code staffOwnerCode,
+                man.tel staffOwnerTel,
+                aa.isdn isdnAgent,
+                2 TYPE,
+                1 objectType,
+                shp.shop_code shopCode,
+                1 AS allowVisitPlan,
+                0 AS totalAcumulate
+FROM shop sp
+         LEFT JOIN group_fixed_d2d_map fd2d ON (sp.shop_id=fd2d.SHOP_ID)
+         LEFT JOIN staff man ON (fd2d.STAFF_ID=man.staff_id)
+         LEFT JOIN account_agent aa ON (sp.shop_id = aa.owner_id
+    AND aa.OWNER_TYPE = 1)
+         LEFT JOIN shop shp ON (sp.parent_shop_id = shp.shop_id)
+WHERE sp.status=1
+  AND sp.x IS NOT NULL
+  AND sp.y IS NOT NULL
+<#if channelCode?has_content>
+    AND sp.shop_code LIKE :channelCode
+</#if>
+<#if staffId?has_content>
+AND fd2d.STAFF_ID =  :staffId
+<#else>
+  AND fd2d.STAFF_ID IN (
+    SELECT DISTINCT sf.staff_id
+    FROM staff sf
+             LEFT JOIN staff man ON (sf.staff_owner_id = man.staff_id)
+    WHERE sf.status = 1
+</#if>
+AND sf.channel_type_id = 14
+<#if userType?has_content>
+  and sf.pos_code = :userType
+<#else>
+  and sf.pos_code IN (select value from sm.app_params where type = 'QLKD_MAP_ZONAL_AGENT' and status = 1)
+</#if>
+      AND sf.shop_id IN (select shop_id from sm.tbl_shop_tree where ROOT_ID = :shopId)
+)
+  AND man.channel_type_id IN (10,14)
+  AND sp.shop_id IN (SELECT stree.shop_id FROM sm.tbl_shop_tree stree WHERE stree.root_id = :shopId )
+  AND sp.channel_type_id IN (101052599)
+  AND sp.status=1
+ORDER BY sp.shop_code,
+         sp.name

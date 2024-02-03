@@ -1,0 +1,18 @@
+SELECT
+    new com.spm.viettel.msm.dto.ConfigureItemDto(
+    id,
+    channelTypeId,
+    evaluationId,
+    groupId,
+    jobId,
+    percent,
+    ok,
+    nok,
+    na,
+    validation,
+    url,
+    status,
+    createdDate,
+    lastUpdate,
+    fileName)
+FROM ItemConfig WHERE id = :itemConfigId

@@ -1,0 +1,40 @@
+SELECT sf.STAFF_ID                           AS id,
+       sf.STAFF_CODE                         AS code,
+       sf.NAME,
+       sf.ADDRESS,
+       sf.CHILD_CHANNEL                      AS rank,
+       man.STAFF_ID                          AS staffOwnerId,
+       man.STAFF_CODE                        AS staffOwnerCode,
+       man.NAME                              AS staffOwnerName,
+       man.TEL                               AS staffOwnerTel,
+       aa.ISDN                               AS isdnAgent,
+       NVL(viewacumulate.total_acumulate, 0) AS totalAcumulate
+FROM STAFF sf
+         LEFT JOIN account_agent aa ON (sf.staff_id = aa.owner_id
+    AND aa.OWNER_TYPE = 2)
+         LEFT JOIN STAFF man ON (sf.STAFF_OWNER_ID = man.STAFF_ID)
+         LEFT JOIN (SELECT channelId, SUM(total) AS total_acumulate
+                    FROM (SELECT active_staff_id AS channelId, COUNT(*) AS total
+                          FROM sm.collect_sub
+                          WHERE start_datetime >= TRUNC(SYSDATE, 'mm')
+                            AND start_datetime < TRUNC(SYSDATE) + 1
+                            AND service_type = 2
+                          GROUP BY active_staff_id
+                          UNION ALL
+                          SELECT (SELECT STAFF_ID
+                                  FROM STAFF
+                                  WHERE STAFF_CODE = cmposdata.STAFF_CODE
+                                    AND ROWNUM = 1) channelId,
+                                 COUNT(*) AS        total
+                          FROM CM_POS.RP_SUB_DEV_DATA cmposdata
+                          WHERE cmposdata.STA_DATETIME >= TRUNC(SYSDATE, 'mm')
+                            AND cmposdata.STA_DATETIME < TRUNC(SYSDATE) + 1
+                          GROUP BY cmposdata.STAFF_CODE)
+                    GROUP BY channelId) viewacumulate ON (sf.STAFF_ID = viewacumulate.channelId)
+WHERE sf.CHANNEL_TYPE_ID = :channelType
+  AND sf.status = 1
+  AND sf.STAFF_ID IN (SELECT fd2d.STAFF_ID
+                      FROM group_fixed_d2d_map fd2d
+                      WHERE 1 = 1
+                        AND fd2d.status = 1
+                        AND fd2d.SHOP_ID = :channelId)

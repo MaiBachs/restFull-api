@@ -1,0 +1,42 @@
+SELECT new com.spm.viettel.msm.repository.smartphone.entity.MapChannelTypeCheckList(
+       sv.id,
+       sv.branchId,
+       sv.branchCode,
+       sv.channelTypeId,
+       sv.jobId,
+       sv.quantityPerMonth,
+       sv.approvalScore,
+       sv.dateEvaluation1,
+       sv.dateEvaluation2,
+       sv.dateEvaluation3,
+       sv.dateEvaluation4,
+       sv.createdBy,
+       sv.createdDate,
+       sv.updatedBy,
+       sv.updatedDate
+) FROM MapChannelTypeCheckList sv
+WHERE sv.branchId = :branchId
+  AND sv.channelTypeId = :channelTypeId
+  AND sv.jobId = :jobId
+<#if quantityPerMonth?has_content>
+  AND sv.quantityPerMonth = :quantityPerMonth
+</#if>
+<#if approvalScore?has_content>
+  AND sv.approvalScore = :approvalScore
+</#if>
+<#if dateEvaluation1?has_content>
+  AND sv.dateEvaluation1 = TO_DATE(:dateEvaluation1,'yyyy/MM/dd')
+</#if>
+<#if dateEvaluation2?has_content>
+ AND sv.dateEvaluation2 = TO_DATE(:dateEvaluation2,'yyyy/MM/dd')
+</#if>
+<#if dateEvaluation3?has_content>
+ AND sv.dateEvaluation3 = TO_DATE(:dateEvaluation3,'yyyy/MM/dd')
+</#if>
+<#if dateEvaluation4?has_content>
+ AND sv.dateEvaluation4 = TO_DATE(:dateEvaluation4,'yyyy/MM/dd')
+</#if>
+<#if checkMonthEvaluation?has_content>
+ AND TO_CHAR(sv.dateEvaluation1, 'MM') = TO_CHAR(TO_DATE(:checkMonthEvaluation,'yyyy/MM/dd'), 'MM')
+</#if>
+

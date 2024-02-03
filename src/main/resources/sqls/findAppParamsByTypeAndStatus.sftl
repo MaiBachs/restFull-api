@@ -1,0 +1,5 @@
+--findAppParamsByType
+select type as type, code as code, name as name, value as value, status as status, telecom_service_id as telecomServiceId
+from app_params
+where type = :type
+  and status = 1

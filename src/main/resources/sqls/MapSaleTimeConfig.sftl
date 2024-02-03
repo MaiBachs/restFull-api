@@ -1,0 +1,14 @@
+--getListSaleTimeConfigBySalePolicyId
+SELECT st.id                        id,
+       st.map_sale_policy_id        mapSalePolicyId,
+       st.time_from                 timeFrom,
+       st.time_to                   timeTo,
+       st.status                    status,
+       st.start_time                startTime,
+       st.end_time                  endTime
+FROM MAP_SALE_TIME_CONFIG st
+WHERE 1=1
+AND st.status <> -1
+<#if mapSalePolicyId?has_content>
+    AND st.MAP_SALE_POLICY_ID = :mapSalePolicyId
+</#if>

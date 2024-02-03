@@ -1,0 +1,28 @@
+mvn install:install-file -Dfile=vaspapi.jar -DgroupId=com.viettel -DartifactId=vaspapi -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=vpclient-4.0.1.jar -DgroupId=com.viettel -DartifactId=vpclient -Dversion=4.0.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=ViettelCrypt-1.0.jar -DgroupId=com.viettel -DartifactId=ViettelCrypt -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=viettelDecryptFilter-1.0.jar -DgroupId=com.viettel -DartifactId=viettelDecryptFilter -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=viettelsecurity.jar -DgroupId=com.viettel -DartifactId=viettelsecurity -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=viettelSecurityFilter-1.1.jar -DgroupId=com.viettel -DartifactId=viettelSecurityFilter -Dversion=1.1 -Dpackaging=jar
+
+mvn install:install-file -Dfile=vpclient-ws.jar -DgroupId=com.viettel -DartifactId=vpclient-ws -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=vptoken.jar -DgroupId=com.viettel -DartifactId=vptoken -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=RDWF-3.3-Core.jar -DgroupId=com.viettel -DartifactId=RDWF-Core -Dversion=3.3 -Dpackaging=jar
+
+mvn install:install-file -Dfile=RDWF-3.3-Core-Mod.jar -DgroupId=com.viettel -DartifactId=RDWF-Core-Mod -Dversion=3.3 -Dpackaging=jar
+
+mvn install:install-file -Dfile=jdbc2_0-stdext.jar -DgroupId=com.viettel -DartifactId=jdbc2_0-stdext -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=SM_LIB_SP.jar -DgroupId=com.viettel -DartifactId=SM_LIB_SP -Dversion=1.0 -Dpackaging=jar
+mvn install:install-file -Dfile=SM_LIB.jar -DgroupId=com.viettel -DartifactId=SM_LIB -Dversion=1.0 -Dpackaging=jar
+
+mvn install:install-file -Dfile=poiji/poiji-3.1.3.jar -DpomFile=poiji/poiji-3.1.3.pom
+mvn install:install-file -Dfile=spring-data-jpa-extra/spring-data-jpa-extra-3.3.0.SPowerMedia.jar -DpomFile=spring-data-jpa-extra/spring-data-jpa-extra-3.3.0.SPowerMedia.pom
+mvn install:install-file -Dfile=spring-boot-starter-jpa-extra/spring-boot-starter-jpa-extra-3.3.0.SPowerMedia.jar -DpomFile=spring-boot-starter-jpa-extra/spring-boot-starter-jpa-extra-3.3.0.SPowerMedia.pom
